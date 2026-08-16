@@ -123,8 +123,7 @@ export function donKetQuaDeXuat(
       cauMoDau: chuoi(m.cauMoDau),
       lyDoDeXuat: chuoi(m.lyDoDeXuat),
       beMat,
-      khamPha: khamPhaRaw === true || khamPhaRaw === 'true',
-      trendSignalId: null,
+      khamPha: khamPhaRaw === true || khamPhaRaw === 'true'
     });
   }
   return ketQua;
@@ -534,10 +533,7 @@ export async function deXuatYTuong(
         lyDoDeXuat: yt.lyDoDeXuat,
         pillarId,
         personaId,
-        trendSignalId: yt.trendSignalId ?? null,
-        nguonYTuong: yt.trendSignalId ? 'xu-huong' : 'may-de-xuat',
       });
-      if (yt.trendSignalId) dsTrendDaDung.add(yt.trendSignalId);
     } catch {
       // Luu that bai thi bo qua y tuong nay, khong de mat ca lo
       canhBao.push(`Không lưu được ý tưởng "${yt.tieuDe}".`);

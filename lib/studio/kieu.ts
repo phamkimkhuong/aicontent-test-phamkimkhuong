@@ -2,8 +2,6 @@
  * Kieu du lieu dung chung cho toan bo module Studio.
  */
 
-import { NguoiDungTuPhien } from "../data-access";
-
 /**
  * Bốn bề mặt nội dung được hệ thống hỗ trợ.
  *
@@ -51,13 +49,6 @@ export type YTuongDeXuat = {
    * false -> ý tưởng được neo vào các tuyến/dữ liệu đã có.
    */
   khamPha: boolean;
-  /**
-   * ID cua tin hieu xu huong da goi y cho y tuong nay. Day la truong mo rong
-   * cua hop dong Mốc 1: co mat khi y tuong dung tham khao xu huong, con khong
-   * dung thi la `null`. Nhờ do `ideas.trend_signal_id` luon truy nguoc duoc
-   * dung bai nguon, thay vi chi luu mot nhan chung chung.
-   */
-  trendSignalId: string | null;
 };
 /**
  * Tỷ lệ mục tiêu của một trụ cột nội dung.
