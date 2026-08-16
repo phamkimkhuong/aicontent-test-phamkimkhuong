@@ -56,7 +56,7 @@ type MucTho = {
   beMat?: unknown;
   kham_pha?: unknown;
   khamPha?: unknown;
-  nguonThamKhao?: unknown;
+  trendSignalId?: unknown;
 };
 
 /** Chuan hoa mot chuoi tu mo hinh: cat khoang trang, tra null neu rong. */
@@ -341,7 +341,7 @@ function trichThamKhao(
 export async function deXuatYTuong(
   thamSo: ThamSoDeXuat,
 ): Promise<KetQuaStudio<YTuongDeXuat[]>> {
-  const { workspaceId, beMat, soLuong, nguoiDung } = thamSo;
+  const { workspaceId, beMat, soLuong } = thamSo;
   const canhBao: string[] = [];
 
   if (!Number.isSafeInteger(soLuong) || soLuong <= 0) {
@@ -415,16 +415,6 @@ export async function deXuatYTuong(
   // Truc co lap thu 2: chi lay tin hieu cua cac kenh NGUOI NAY thuc su theo doi.
   let thamKhao: ThamKhaoXuHuong[] = [];
 
-  if (nguoiDung) {
-    try {
-      const tinHieuRaw = await repo.tinHieuXuHuong.theoNguoiDung(nguoiDung, GIOI_HAN_TIN_HIEU);
-      thamKhao = trichThamKhao(tinHieuRaw);
-    } catch {
-      // Khong co tin hieu xu huong thi van sinh y tuong duoc, chi thieu nguon thu 5
-      canhBao.push('Không đọc được tín hiệu xu hướng. Ý tưởng sẽ chỉ dựa trên hồ sơ.');
-    }
-  }
-
   // Danh sach trendSignalId hop le — de validate ket qua mo hinh
   const dsTrendSignalId = thamKhao.map((tk) => tk.id);
 
@@ -456,7 +446,7 @@ export async function deXuatYTuong(
     })),
     // Lop C: cong thuc ke tu kenh ngoai — CHI chu de + kieu hook, KHONG co noi dung goc
     mauNgoai: thamKhao.map((tk, index) => ({
-      soThuTu: index + 1,
+      soThuTu: tk.id,
       chuDe: tk.chuDe,
       kieuHook: tk.kieuHook,
       soChu: tk.soChu,

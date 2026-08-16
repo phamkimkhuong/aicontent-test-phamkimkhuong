@@ -79,7 +79,6 @@ export type ThamSoDeXuat = {
   workspaceId: string;
   beMat: BeMat;
   soLuong: number;
-  nguoiDung?: NguoiDungTuPhien;
 };
 
 
