@@ -23,7 +23,7 @@ import type { TruCot } from '@/lib/data-access/content-pillars';
 import { chayNhiemVu } from '@/lib/model-runner';
 import { daBocXong, type CongThuc } from './boc-cong-thuc';
 
-import type { BeMat, KetQuaStudio, YTuongDeXuat } from './kieu';
+import type { BeMat, KetQuaStudio, ThamSoDeXuat, YTuongDeXuat } from './kieu';
 
 // ---------------------------------------------------------------------------
 // Hang so
@@ -56,6 +56,7 @@ type MucTho = {
   beMat?: unknown;
   kham_pha?: unknown;
   khamPha?: unknown;
+  nguonThamKhao?: unknown;
 };
 
 /** Chuan hoa mot chuoi tu mo hinh: cat khoang trang, tra null neu rong. */
@@ -208,13 +209,11 @@ function apDungLargestRemainder(
 }
 
 /**
- * Rai N y tuong theo ti le tru cot muc tieu + enforce TI_LE_KHAM_PHA.
+ * Rai N y tuong theo ti le tru cot muc tieu
+ * va uu tien duy tri ti le y tuong kham pha muc tieu.
  *
- * Thuat toan:
- *   1. Phan bo so cho cua tung tru cot bang Largest Remainder Method
- *   2. Chon y tuong co `truCot` khop, uu tien y tuong khong kham pha
- *   3. Cho trong con lai: dien bang y tuong chua duoc chon
- *   4. Enforce ti le kham pha: dam bao dung soKhamPha y tuong co khamPha=true
+ * `khamPha` la thuoc tinh cua y tuong da duoc xac dinh truoc do.
+ * Ham nay chi chon candidate, khong thay doi `khamPha`.
  */
 export function raiTheoTruCot(
   yTuongTho: YTuongDeXuat[],
@@ -256,29 +255,28 @@ export function raiTheoTruCot(
   // Mo hinh co the tra it hon N y tuong hop le. Khi do chi co the ep ti le
   // tren so y tuong that su tra ve, khong tao ban sao de du so luong.
   const soKhamPhaMucTieu = Math.round(daRai.length * TI_LE_KHAM_PHA);
-  const soKhamPhaHienTai = daRai.filter((y) => y.khamPha).length;
+  const yTuongKhamPha = daRai.filter((y) => y.khamPha);
+  const yTuongThuong = daRai.filter((y) => !y.khamPha);
+  let chonKhamPha: YTuongDeXuat[];
+  let chonThuong: YTuongDeXuat[];
 
-  if (soKhamPhaHienTai < soKhamPhaMucTieu) {
-    // Thieu kham pha: danh dau them y tuong cuoi danh sach la kham pha
-    let canThem = soKhamPhaMucTieu - soKhamPhaHienTai;
-    for (let i = daRai.length - 1; i >= 0 && canThem > 0; i--) {
-      if (!daRai[i].khamPha) {
-        daRai[i] = { ...daRai[i], khamPha: true };
-        canThem--;
-      }
-    }
-  } else if (soKhamPhaHienTai > soKhamPhaMucTieu) {
-    // Thua kham pha: bo co kham pha o nhung y tuong co tru cot & chan dung thuc
-    let canBo = soKhamPhaHienTai - soKhamPhaMucTieu;
-    for (let i = 0; i < daRai.length && canBo > 0; i++) {
-      if (daRai[i].khamPha && daRai[i].truCot && daRai[i].chanDung) {
-        daRai[i] = { ...daRai[i], khamPha: false };
-        canBo--;
-      }
-    }
+  if (yTuongKhamPha.length >= soKhamPhaMucTieu) {
+    chonKhamPha = yTuongKhamPha.slice(0, soKhamPhaMucTieu);
+
+    // Phần còn lại lấy từ ý tưởng grounded.
+    chonThuong = yTuongThuong.slice(
+      0,
+      daRai.length - chonKhamPha.length,
+    );
+  } else {
+    chonKhamPha = yTuongKhamPha;
+
+    chonThuong = yTuongThuong.slice(
+      0,
+      daRai.length - chonKhamPha.length,
+    );
   }
-
-  return daRai;
+  return [...chonKhamPha, ...chonThuong];
 }
 
 // ---------------------------------------------------------------------------
@@ -327,4 +325,248 @@ function trichThamKhao(
     });
   }
   return ketQua;
+}
+// ---------------------------------------------------------------------------
+// Cua chinh: de xuat y tuong
+// ---------------------------------------------------------------------------
+
+/**
+ * Cua chinh: doc ho so, goi mo hinh, don, rai, persist, tra ket qua.
+ *
+ * Toan bo du lieu dau vao doc tu CSDL qua `createRepo()` (rang buoc 1).
+ * Goi mo hinh qua `chayNhiemVu()` (rang buoc 5).
+ * Tin hieu xu huong chi doc khi co `nguoiDung` — truc co lap thu 2 (rang buoc 16).
+ * Ket qua duoc persist vao bang `ideas` de refresh trang van hien thi.
+ */
+export async function deXuatYTuong(
+  thamSo: ThamSoDeXuat,
+): Promise<KetQuaStudio<YTuongDeXuat[]>> {
+  const { workspaceId, beMat, soLuong, nguoiDung } = thamSo;
+  const canhBao: string[] = [];
+
+  if (!Number.isSafeInteger(soLuong) || soLuong <= 0) {
+    return {
+      trangThai: 'loi',
+      ketQua: null,
+      loi: 'Số lượng ý tưởng phải là một số nguyên dương.',
+      canhBao,
+    };
+  }
+  if (!BE_MAT_HOP_LE.includes(beMat)) {
+    return {
+      trangThai: 'loi',
+      ketQua: null,
+      loi: 'Bề mặt đăng bài không hợp lệ.',
+      canhBao,
+    };
+  }
+
+  // --- 1. Doc du lieu tu CSDL ---
+  const repo = createRepo(workspaceId);
+
+  let hoSo;
+  let truCotDs;
+  let chanDungDs;
+  let insightDs;
+  let baiDaDang;
+  try {
+    [hoSo, truCotDs, chanDungDs, insightDs, baiDaDang] = await Promise.all([
+      repo.hoSo.layHoacTao(),
+      repo.truCot.list(),
+      repo.chanDung.list(),
+      repo.insight.list(),
+      repo.contents.list({ trangThai: 'da_dang', gioiHan: GIOI_HAN_BAI_DA_DANG }),
+    ]);
+  } catch {
+    return {
+      trangThai: 'loi',
+      ketQua: null,
+      loi: 'Không đọc được dữ liệu hồ sơ. Vui lòng thử lại.',
+      canhBao,
+    };
+  }
+
+  if (truCotDs.length === 0) {
+    canhBao.push('Chưa có trụ cột nội dung. Vào /brand để thêm.');
+  }
+  if (chanDungDs.length === 0) {
+    canhBao.push('Chưa có chân dung khách hàng. Vào /brand để thêm.');
+  }
+  if (truCotDs.length === 0 || chanDungDs.length === 0) {
+    return {
+      trangThai: 'loi',
+      ketQua: null,
+      loi: 'Cần có ít nhất một trụ cột và một chân dung khách hàng trước khi đề xuất.',
+      canhBao,
+    };
+  }
+
+  // Danh sach TEN co that — de doi chieu ket qua mo hinh
+  const dsTenTruCot = truCotDs.map((t: TruCot) => t.ten);
+  const dsTenChanDung = chanDungDs.map((c: ChanDung) => c.ten);
+
+  // Tru cot muc tieu — de rai y tuong theo ti le
+  const truCotMucTieu: TruCotMucTieu[] = truCotDs.map((t: TruCot) => ({
+    ten: t.ten,
+    tiLeMucTieu: t.tiLeMucTieu !== null ? Number(t.tiLeMucTieu) : null,
+  }));
+
+  // --- 2. Doc tin hieu xu huong (chi cong thuc ke, KHONG co noi dung goc) ---
+  // Truc co lap thu 2: chi lay tin hieu cua cac kenh NGUOI NAY thuc su theo doi.
+  let thamKhao: ThamKhaoXuHuong[] = [];
+
+  if (nguoiDung) {
+    try {
+      const tinHieuRaw = await repo.tinHieuXuHuong.theoNguoiDung(nguoiDung, GIOI_HAN_TIN_HIEU);
+      thamKhao = trichThamKhao(tinHieuRaw);
+    } catch {
+      // Khong co tin hieu xu huong thi van sinh y tuong duoc, chi thieu nguon thu 5
+      canhBao.push('Không đọc được tín hiệu xu hướng. Ý tưởng sẽ chỉ dựa trên hồ sơ.');
+    }
+  }
+
+  // Danh sach trendSignalId hop le — de validate ket qua mo hinh
+  const dsTrendSignalId = thamKhao.map((tk) => tk.id);
+
+  // --- 3. Dung du lieu dau vao cho mo hinh ---
+  const duLieuVao: Record<string, unknown> = {
+    hoSo: {
+      moTa: hoSo.moTa,
+      giongDieu: hoSo.giongDieu,
+      dieuCamKy: hoSo.dieuCamKy,
+    },
+    truCot: truCotDs.map((t: TruCot) => ({
+      ten: t.ten,
+      mucDich: t.mucDich,
+    })),
+    chanDung: chanDungDs.map((c: ChanDung) => ({
+      ten: c.ten,
+      doTuoi: c.doTuoi,
+      ngheNghiep: c.ngheNghiep,
+      noiDau: c.noiDau,
+      mongMuon: c.mongMuon,
+    })),
+    insight: insightDs.map((i: Insight) => ({
+      noiDung: i.noiDung,
+      bangChung: i.bangChung,
+    })),
+    baiDaDang: baiDaDang.map((b) => ({
+      tieuDe: b.cauMoDau ?? (b.noiDung ? b.noiDung.slice(0, 100) : ''),
+      beMat: b.beMat,
+    })),
+    // Lop C: cong thuc ke tu kenh ngoai — CHI chu de + kieu hook, KHONG co noi dung goc
+    mauNgoai: thamKhao.map((tk, index) => ({
+      soThuTu: index + 1,
+      chuDe: tk.chuDe,
+      kieuHook: tk.kieuHook,
+      soChu: tk.soChu,
+      dangBai: tk.dangBai,
+    })),
+    beMat,
+    soLuong,
+    tiLeKhamPha: TI_LE_KHAM_PHA,
+  };
+
+  // --- 4. Goi mo hinh qua hang doi ---
+  let ketQuaMoHinh;
+  try {
+    ketQuaMoHinh = await chayNhiemVu({
+      nhiemVu: 'de-xuat-y-tuong',
+      duLieuVao,
+      moHinh: 'auto',
+      khongGianLamViec: workspaceId,
+      // Dung khoa mac dinh cua runner. Khoa duoc bao ve bang UNIQUE trong CSDL,
+      // nen hai lan bam cung payload chi tao mot job thay vi goi model va luu
+      // trung hai bo y tuong.
+    });
+  } catch {
+    return {
+      trangThai: 'loi',
+      ketQua: null,
+      loi: 'Không gọi được mô hình. Vui lòng thử lại.',
+      canhBao,
+    };
+  }
+
+  if (ketQuaMoHinh.trangThai !== 'xong' || !ketQuaMoHinh.ketQua) {
+    return {
+      trangThai: 'loi',
+      ketQua: null,
+      loi: ketQuaMoHinh.loi ?? 'Mô hình không trả về kết quả.',
+      canhBao,
+    };
+  }
+
+  // --- 5. Don ket qua tho ---
+  const yTuongTho = donKetQuaDeXuat(
+    ketQuaMoHinh.ketQua,
+    dsTenTruCot,
+    dsTenChanDung,
+    beMat
+  );
+
+  if (yTuongTho.length === 0) {
+    return {
+      trangThai: 'loi',
+      ketQua: null,
+      loi: 'Mô hình không sinh được ý tưởng nào hợp lệ.',
+      canhBao,
+    };
+  }
+
+  // --- 6. Rai theo ti le tru cot + enforce TI_LE_KHAM_PHA ---
+  const yTuongDaRai = raiTheoTruCot(yTuongTho, truCotMucTieu, soLuong);
+
+  // --- 7. Persist vao bang ideas ---
+  // Map ten tru cot/chan dung -> ID de luu foreign key
+  // Neu day la request trung, request dau tien la request duy nhat persist. Ca
+  // hai request van nhan cung ket qua de UI khong bi loi, nhung khong sinh dong
+  // `ideas` lap lai sau khi job trong hang doi ket thuc.
+  if (!ketQuaMoHinh.moi) {
+    canhBao.push('Đề xuất trùng một yêu cầu đang có; dùng lại kết quả đã sinh.');
+    return { trangThai: 'xong', ketQua: yTuongDaRai, loi: null, canhBao };
+  }
+
+  const mapTruCot = new Map(truCotDs.map((t: TruCot) => [chuanHoaTen(t.ten), t.id]));
+  const mapChanDung = new Map(chanDungDs.map((c: ChanDung) => [chuanHoaTen(c.ten), c.id]));
+
+  const dsTrendDaDung = new Set<string>();
+
+  for (const yt of yTuongDaRai) {
+    const pillarId = yt.truCot ? mapTruCot.get(chuanHoaTen(yt.truCot)) ?? null : null;
+    const personaId = yt.chanDung ? mapChanDung.get(chuanHoaTen(yt.chanDung)) ?? null : null;
+
+    try {
+      await repo.yTuong.tao({
+        beMat: yt.beMat,
+        gocTiepCan: yt.gocTiepCan,
+        cauMoDau: yt.cauMoDau,
+        lyDoDeXuat: yt.lyDoDeXuat,
+        pillarId,
+        personaId,
+        trendSignalId: yt.trendSignalId ?? null,
+        nguonYTuong: yt.trendSignalId ? 'xu-huong' : 'may-de-xuat',
+      });
+      if (yt.trendSignalId) dsTrendDaDung.add(yt.trendSignalId);
+    } catch {
+      // Luu that bai thi bo qua y tuong nay, khong de mat ca lo
+      canhBao.push(`Không lưu được ý tưởng "${yt.tieuDe}".`);
+    }
+  }
+
+  // Danh dau trend signals da dung de lan sau uu tien bai chua khai thac
+  if (dsTrendDaDung.size > 0) {
+    try {
+      await repo.tinHieuXuHuong.danhDauDaDung([...dsTrendDaDung]);
+    } catch {
+      // Khong critical — chi anh huong thu tu uu tien lan sau
+    }
+  }
+
+  return {
+    trangThai: 'xong',
+    ketQua: yTuongDaRai,
+    loi: null,
+    canhBao,
+  };
 }

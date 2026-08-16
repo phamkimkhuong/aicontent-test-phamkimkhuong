@@ -2,6 +2,8 @@
  * Kieu du lieu dung chung cho toan bo module Studio.
  */
 
+import { NguoiDungTuPhien } from "../data-access";
+
 /**
  * Bốn bề mặt nội dung được hệ thống hỗ trợ.
  *
@@ -55,7 +57,7 @@ export type YTuongDeXuat = {
    * dung thi la `null`. Nhờ do `ideas.trend_signal_id` luon truy nguoc duoc
    * dung bai nguon, thay vi chi luu mot nhan chung chung.
    */
-  trendSignalId: string | null;
+  trendSignalId?: string | null;
 };
 /**
  * Tỷ lệ mục tiêu của một trụ cột nội dung.
@@ -77,6 +79,7 @@ export type ThamSoDeXuat = {
   workspaceId: string;
   beMat: BeMat;
   soLuong: number;
+  nguoiDung?: NguoiDungTuPhien;
 };
 
 
