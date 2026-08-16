@@ -57,7 +57,7 @@ export type YTuongDeXuat = {
    * dung thi la `null`. Nhờ do `ideas.trend_signal_id` luon truy nguoc duoc
    * dung bai nguon, thay vi chi luu mot nhan chung chung.
    */
-  trendSignalId?: string | null;
+  trendSignalId: string | null;
 };
 /**
  * Tỷ lệ mục tiêu của một trụ cột nội dung.

@@ -57,6 +57,7 @@ type MucTho = {
   kham_pha?: unknown;
   khamPha?: unknown;
   nguonThamKhao?: unknown;
+  trendSignalId?: unknown;
 };
 
 /** Chuan hoa mot chuoi tu mo hinh: cat khoang trang, tra null neu rong. */
@@ -100,12 +101,14 @@ export function donKetQuaDeXuat(
   dsTruCot: string[] = [],
   dsChanDung: string[] = [],
   beMat: BeMat = 'fanpage',
+  dsTrendSignalId: string[] = [],
 ): YTuongDeXuat[] {
   if (!tho || typeof tho !== 'object') return [];
 
   const mang = (tho as { yTuong?: unknown }).yTuong;
   if (!Array.isArray(mang)) return [];
 
+  const trendIdHopLe = new Set(dsTrendSignalId);
   const ketQua: YTuongDeXuat[] = [];
   for (const m of mang as MucTho[]) {
     if (!m || typeof m !== 'object') continue;
@@ -114,6 +117,12 @@ export function donKetQuaDeXuat(
 
     // Mo hinh co the tra `kham_pha` (snake_case) hoac `khamPha` (camelCase)
     const khamPhaRaw = m.kham_pha ?? m.khamPha;
+
+    const rawTrendId = chuoi(m.trendSignalId);
+    const trendSignalId =
+      rawTrendId && trendIdHopLe.has(rawTrendId)
+        ? rawTrendId
+        : null;
 
     ketQua.push({
       tieuDe,
@@ -124,7 +133,7 @@ export function donKetQuaDeXuat(
       lyDoDeXuat: chuoi(m.lyDoDeXuat),
       beMat,
       khamPha: khamPhaRaw === true || khamPhaRaw === 'true',
-      trendSignalId: null,
+      trendSignalId,
     });
   }
   return ketQua;
@@ -502,7 +511,8 @@ export async function deXuatYTuong(
     ketQuaMoHinh.ketQua,
     dsTenTruCot,
     dsTenChanDung,
-    beMat
+    beMat,
+    dsTrendSignalId
   );
 
   if (yTuongTho.length === 0) {
