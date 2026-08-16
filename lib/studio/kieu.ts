@@ -20,18 +20,20 @@ export type BeMat = 'fanpage' | 'ho_so_ca_nhan' | 'tiktok' | 'zalo';
  */
 
 export type YTuongDeXuat = {
-   /** Tiêu đề/ngắn gọn mô tả ý tưởng. */
+  /** Tiêu đề/ngắn gọn mô tả ý tưởng. */
   tieuDe: string;
   /** Phai khop mot tru cot CO THAT trong ho so. Khong khop thi null. */
   truCot: string | null;
-   /**
-   * Tên chân dung khách hàng.
-   *
-   * Phải khớp với một persona thực tế trong workspace.
-   * Nếu model bịa hoặc không khớp -> null.
-   */
+  /**
+  * Tên chân dung khách hàng.
+  *
+  * Phải khớp với một persona thực tế trong workspace.
+  * Nếu model bịa hoặc không khớp -> null.
+  */
   chanDung: string | null;
-   
+  /** Góc tiếp cận của ý tưởng. */
+  gocTiepCan: string | null;
+  /** Câu mở đầu / hook dự kiến. */
   cauMoDau: string | null;
   /**
    * Giải thích tại sao hệ thống đề xuất ý tưởng này.
@@ -40,7 +42,7 @@ export type YTuongDeXuat = {
    * pillar, persona, insight, lịch sử nội dung hoặc tín hiệu xu hướng.
    */
   lyDoDeXuat: string | null;
-   /** Bề mặt mà ý tưởng được tạo ra cho. */
+  /** Bề mặt mà ý tưởng được tạo ra cho. */
   beMat: BeMat;
   /**
    * true  -> ý tưởng khám phá hướng mới.
@@ -53,7 +55,7 @@ export type YTuongDeXuat = {
    * dung thi la `null`. Nhờ do `ideas.trend_signal_id` luon truy nguoc duoc
    * dung bai nguon, thay vi chi luu mot nhan chung chung.
    */
-  trendSignalId?: string | null;
+  trendSignalId: string | null;
 };
 /**
  * Tỷ lệ mục tiêu của một trụ cột nội dung.
