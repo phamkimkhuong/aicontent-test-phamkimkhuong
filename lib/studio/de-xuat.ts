@@ -40,25 +40,6 @@ const GIOI_HAN_TIN_HIEU = 30;
 /** Gioi han bai da dang lay ve de gom chu de. */
 const GIOI_HAN_BAI_DA_DANG = 20;
 
-// ---------------------------------------------------------------------------
-// Kieu hop dong
-// ---------------------------------------------------------------------------
-
-export type ThamSoDeXuat = {
-  workspaceId: string;
-  beMat: BeMat;
-  soLuong: number;
-  /**
-   * Nguoi dung hien tai — can cho truc co lap THU HAI khi doc trend_signals.
-   * `theoNguoiDung()` can `NguoiDungTuPhien` de chi lay tin hieu cua cac kenh
-   * nguoi nay THUC SU theo doi, khong phai moi kenh trong workspace.
-   *
-   * Tuy chon: khi khong truyen, bo qua trend signals (van sinh y tuong duoc,
-   * nhung thieu nguon du lieu thu 5).
-   */
-  nguoiDung?: NguoiDungTuPhien;
-};
-
 export type TruCotMucTieu = { ten: string; tiLeMucTieu: number | null };
 
 // ---------------------------------------------------------------------------
@@ -75,8 +56,6 @@ type MucTho = {
   beMat?: unknown;
   kham_pha?: unknown;
   khamPha?: unknown;
-  /** Mo hinh co the gan trendSignalId vao y tuong neu du lieu vao co mauNgoai. */
-  trendSignalId?: unknown;
 };
 
 /** Chuan hoa mot chuoi tu mo hinh: cat khoang trang, tra null neu rong. */
@@ -105,3 +84,247 @@ function doiChieu(ten: unknown, danhSachHopLe: string[]): string | null {
   return danhSachHopLe.find((t) => chuanHoaTen(t) === chuanHoa) ?? null;
 }
 
+/**
+ * Don ket qua tho cua mo hinh ve dung hinh dang YTuongDeXuat[].
+ *
+ * Ham thuan, test duoc bang du lieu tay — khong goi mang, khong doc CSDL.
+ *
+ * @param tho - Ket qua tho tu mo hinh (doi tuong co truong `yTuong`)
+ * @param dsTruCot - Danh sach ten tru cot CO THAT trong ho so
+ * @param dsChanDung - Danh sach ten chan dung CO THAT trong ho so
+ * @param beMat - Be mat mac dinh neu mo hinh khong tra ve
+ */
+export function donKetQuaDeXuat(
+  tho: unknown,
+  dsTruCot: string[] = [],
+  dsChanDung: string[] = [],
+  beMat: BeMat = 'fanpage',
+): YTuongDeXuat[] {
+  if (!tho || typeof tho !== 'object') return [];
+
+  const mang = (tho as { yTuong?: unknown }).yTuong;
+  if (!Array.isArray(mang)) return [];
+
+  const ketQua: YTuongDeXuat[] = [];
+  for (const m of mang as MucTho[]) {
+    if (!m || typeof m !== 'object') continue;
+    const tieuDe = chuoi(m.tieuDe);
+    if (!tieuDe) continue; // y tuong khong co tieu de la khong dung duoc
+
+    // Mo hinh co the tra `kham_pha` (snake_case) hoac `khamPha` (camelCase)
+    const khamPhaRaw = m.kham_pha ?? m.khamPha;
+
+    ketQua.push({
+      tieuDe,
+      truCot: doiChieu(m.truCot, dsTruCot),
+      chanDung: doiChieu(m.chanDung, dsChanDung),
+      gocTiepCan: chuoi(m.gocTiepCan),
+      cauMoDau: chuoi(m.cauMoDau),
+      lyDoDeXuat: chuoi(m.lyDoDeXuat),
+      beMat,
+      khamPha: khamPhaRaw === true || khamPhaRaw === 'true',
+      trendSignalId: null,
+    });
+  }
+  return ketQua;
+}
+
+// ---------------------------------------------------------------------------
+// Rai y tuong theo ti le tru cot muc tieu — Largest Remainder Method
+// ---------------------------------------------------------------------------
+
+/**
+ * Phan bo N cho vao cac tru cot theo ti le muc tieu.
+ *
+ * Dung Largest Remainder Method de dam bao tong LUON bang N:
+ *   1. Tinh so cho tho = floor(tiLe * N)
+ *   2. Tong floor < N → phan du = N - tong floor
+ *   3. Sap xep theo phan le (fraction) giam dan, bo phan du vao
+ */
+function phanBoCho(
+  truCotMucTieu: TruCotMucTieu[],
+  soLuong: number,
+): { ten: string; soCho: number }[] {
+  if (truCotMucTieu.length === 0) return [];
+
+  const tiLeNhap = truCotMucTieu.map((t) =>
+    typeof t.tiLeMucTieu === 'number' && Number.isFinite(t.tiLeMucTieu)
+      ? Math.max(0, t.tiLeMucTieu)
+      : null,
+  );
+  const tongTiLe = tiLeNhap.reduce<number>((tong, tiLe) => tong + (tiLe ?? 0), 0);
+  const soChuaDatTiLe = tiLeNhap.filter((tiLe) => tiLe === null).length;
+
+  // Ho so luu ti le theo phan tram (60, 40), nhung van chap nhan ty le thap
+  // phan (0.6, 0.4). Tru cot `null` nhan phan con lai; neu cac ty le da vuot
+  // 100% thi chuan hoa cac ty le da khai bao va khong tu bia cho phan `null`.
+  if (tongTiLe === 0) {
+    return apDungLargestRemainder(
+      truCotMucTieu.map((t) => ({ ten: t.ten, tiLe: 1 / truCotMucTieu.length })),
+      soLuong,
+    );
+  }
+
+  const donVi = tongTiLe <= 1 ? 1 : 100;
+  const coPhanConLai = tongTiLe < donVi && soChuaDatTiLe > 0;
+  const tiLeThuc = truCotMucTieu.map((t, chiSo) => {
+    const tiLe = tiLeNhap[chiSo];
+    if (tiLe !== null) {
+      return { ten: t.ten, tiLe: coPhanConLai ? tiLe / donVi : tiLe / tongTiLe };
+    }
+    return {
+      ten: t.ten,
+      tiLe: coPhanConLai ? (donVi - tongTiLe) / donVi / soChuaDatTiLe : 0,
+    };
+  });
+
+  return apDungLargestRemainder(tiLeThuc, soLuong);
+}
+
+function apDungLargestRemainder(
+  tiLeThuc: { ten: string; tiLe: number }[],
+  soLuong: number,
+): { ten: string; soCho: number }[] {
+  const raw = tiLeThuc.map((t, chiSo) => ({
+    ten: t.ten,
+    chiSo,
+    choTho: t.tiLe * soLuong,
+    choFloor: Math.floor(t.tiLe * soLuong),
+    phanLe: (t.tiLe * soLuong) % 1,
+  }));
+
+  const tongFloor = raw.reduce((s, r) => s + r.choFloor, 0);
+  let conLai = soLuong - tongFloor;
+
+  // Sap xep theo phan le giam dan, bo con lai vao
+  const sapXep = [...raw].sort((a, b) => b.phanLe - a.phanLe || a.chiSo - b.chiSo);
+  for (const muc of sapXep) {
+    if (conLai <= 0) break;
+    muc.choFloor += 1;
+    conLai -= 1;
+  }
+
+  return raw.map((r) => ({ ten: r.ten, soCho: r.choFloor }));
+}
+
+/**
+ * Rai N y tuong theo ti le tru cot muc tieu + enforce TI_LE_KHAM_PHA.
+ *
+ * Thuat toan:
+ *   1. Phan bo so cho cua tung tru cot bang Largest Remainder Method
+ *   2. Chon y tuong co `truCot` khop, uu tien y tuong khong kham pha
+ *   3. Cho trong con lai: dien bang y tuong chua duoc chon
+ *   4. Enforce ti le kham pha: dam bao dung soKhamPha y tuong co khamPha=true
+ */
+export function raiTheoTruCot(
+  yTuongTho: YTuongDeXuat[],
+  truCotMucTieu: TruCotMucTieu[],
+  soLuong: number,
+): YTuongDeXuat[] {
+  if (!Number.isSafeInteger(soLuong) || soLuong <= 0 || yTuongTho.length === 0) return [];
+  if (truCotMucTieu.length === 0) return yTuongTho.slice(0, soLuong);
+
+  const choTheoTruCot = phanBoCho(truCotMucTieu, soLuong);
+  const daChon = new Set<number>();
+  const ketQua: YTuongDeXuat[] = [];
+
+  // Buoc 1: Dien theo tru cot
+  for (const { ten, soCho } of choTheoTruCot) {
+    let daDien = 0;
+    const tenThuong = ten.toLowerCase().trim();
+    for (let i = 0; i < yTuongTho.length && daDien < soCho; i++) {
+      if (daChon.has(i)) continue;
+      const tc = yTuongTho[i].truCot;
+      if (tc && tc.toLowerCase().trim() === tenThuong) {
+        ketQua.push(yTuongTho[i]);
+        daChon.add(i);
+        daDien++;
+      }
+    }
+  }
+
+  // Buoc 2: Cho trong con lai — dien bang y tuong chua chon
+  for (let i = 0; i < yTuongTho.length && ketQua.length < soLuong; i++) {
+    if (!daChon.has(i)) {
+      ketQua.push(yTuongTho[i]);
+      daChon.add(i);
+    }
+  }
+
+  // Buoc 3: Enforce TI_LE_KHAM_PHA
+  const daRai = ketQua.slice(0, soLuong);
+  // Mo hinh co the tra it hon N y tuong hop le. Khi do chi co the ep ti le
+  // tren so y tuong that su tra ve, khong tao ban sao de du so luong.
+  const soKhamPhaMucTieu = Math.round(daRai.length * TI_LE_KHAM_PHA);
+  const soKhamPhaHienTai = daRai.filter((y) => y.khamPha).length;
+
+  if (soKhamPhaHienTai < soKhamPhaMucTieu) {
+    // Thieu kham pha: danh dau them y tuong cuoi danh sach la kham pha
+    let canThem = soKhamPhaMucTieu - soKhamPhaHienTai;
+    for (let i = daRai.length - 1; i >= 0 && canThem > 0; i--) {
+      if (!daRai[i].khamPha) {
+        daRai[i] = { ...daRai[i], khamPha: true };
+        canThem--;
+      }
+    }
+  } else if (soKhamPhaHienTai > soKhamPhaMucTieu) {
+    // Thua kham pha: bo co kham pha o nhung y tuong co tru cot & chan dung thuc
+    let canBo = soKhamPhaHienTai - soKhamPhaMucTieu;
+    for (let i = 0; i < daRai.length && canBo > 0; i++) {
+      if (daRai[i].khamPha && daRai[i].truCot && daRai[i].chanDung) {
+        daRai[i] = { ...daRai[i], khamPha: false };
+        canBo--;
+      }
+    }
+  }
+
+  return daRai;
+}
+
+// ---------------------------------------------------------------------------
+// Trich xuat thong tin tham khao tu tin hieu xu huong
+//
+// RANG BUOC 3 (TEST-BRIEF muc 5.3): chi lay CHU DE va CONG THUC KE,
+// KHONG truyen nguyen van noi dung bai goc vao loi nhac.
+// Ham nay la cho duy nhat ep rang buoc do o TANG MA.
+// ---------------------------------------------------------------------------
+
+type ThamKhaoXuHuong = {
+  id: string;
+  chuDe: string[];
+  kieuHook: string | null;
+  soChu: number;
+  dangBai: string | null;
+  tenKenh: string | null;
+};
+
+/**
+ * Trich xuat cong thuc ke tu cac tin hieu xu huong da boc.
+ *
+ * CHI lay chu de + cong thuc, KHONG lay noi dung bai goc. Rang buoc nay duoc
+ * ep o tang ma: ham nay KHONG nhan tham so `noiDung`, nen du nguoi goi muon
+ * truyen vao cung khong co cach nao.
+ */
+function trichThamKhao(
+  tinHieu: Array<{
+    id: string;
+    congThuc: unknown;
+    dangBai: string | null;
+    tenKenh: string | null;
+  }>,
+): ThamKhaoXuHuong[] {
+  const ketQua: ThamKhaoXuHuong[] = [];
+  for (const th of tinHieu) {
+    if (!daBocXong(th.congThuc)) continue;
+    const ct = th.congThuc as CongThuc;
+    ketQua.push({
+      id: th.id,
+      chuDe: ct.chuDe ?? [],
+      kieuHook: ct.kieuHook ?? null,
+      soChu: ct.soChu ?? 0,
+      dangBai: th.dangBai,
+      tenKenh: th.tenKenh,
+    });
+  }
+  return ketQua;
+}
