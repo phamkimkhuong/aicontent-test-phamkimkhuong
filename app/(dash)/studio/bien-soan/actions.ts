@@ -52,19 +52,23 @@ export async function luuBaiAction(thamSo: {
   const repo = createRepo(workspaceId);
 
   try {
+    let finalBeMat: BeMat = thamSo.beMat;
     let pillarId: string | null = null;
     let personaId: string | null = null;
 
     if (thamSo.ideaId) {
       const yTuong = await repo.yTuong.layTheoId(thamSo.ideaId);
       if (yTuong) {
+        if (yTuong.beMat && ['fanpage', 'ho_so_ca_nhan', 'tiktok', 'zalo'].includes(yTuong.beMat)) {
+          finalBeMat = yTuong.beMat as BeMat;
+        }
         pillarId = yTuong.pillarId ?? null;
         personaId = yTuong.personaId ?? null;
       }
     }
 
     const dong = await repo.contents.tao({
-      beMat: thamSo.beMat,
+      beMat: finalBeMat,
       noiDung: thamSo.noiDung,
       cauMoDau: thamSo.cauMoDau ?? null,
       gocTiepCan: thamSo.gocTiepCan ?? null,

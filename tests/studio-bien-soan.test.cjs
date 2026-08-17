@@ -49,6 +49,24 @@ test('kiemDoDai: kiem tra dung nguong cua tung be mat', () => {
   assert.equal(kiemDoDai('zalo', zaloVua).dat, true);
 });
 
+test('kiemDoDai: kiem tra dung khi co epDoDai co dinh', () => {
+  // epDoDai = 200 (khoang cho phep +-10%: 180-220 tu)
+  const vanBan190 = new Array(190).fill('tu').join(' ');
+  const ket190 = kiemDoDai('fanpage', vanBan190, 200);
+  assert.equal(ket190.dat, true);
+  assert.equal(ket190.trangThai, 'dat');
+
+  const vanBan150 = new Array(150).fill('tu').join(' '); // Mac du fanpage cho 150-300 nhung vi ep 200 nen 150 la ngan
+  const ket150 = kiemDoDai('fanpage', vanBan150, 200);
+  assert.equal(ket150.dat, false);
+  assert.equal(ket150.trangThai, 'ngan');
+
+  const vanBan250 = new Array(250).fill('tu').join(' ');
+  const ket250 = kiemDoDai('fanpage', vanBan250, 200);
+  assert.equal(ket250.dat, false);
+  assert.equal(ket250.trangThai, 'dai');
+});
+
 test('KHOANG_TU_BE_MAT: co du bon be mat', () => {
   assert.ok(KHOANG_TU_BE_MAT.fanpage);
   assert.ok(KHOANG_TU_BE_MAT.tiktok);

@@ -157,8 +157,8 @@ export async function sinhBaiViet(
     };
   }
 
-  // Kiem tra do dai theo chuan be mat
-  const doDai = kiemDoDai(finalBeMat, noiDungKet);
+  // Kiem tra do dai theo chuan be mat hoac epDoDai
+  const doDai = kiemDoDai(finalBeMat, noiDungKet, typeof epDoDai === 'number' ? epDoDai : null);
   if (!doDai.dat) {
     canhBao.push(`Độ dài bài viết: ${doDai.moTa}`);
   }
