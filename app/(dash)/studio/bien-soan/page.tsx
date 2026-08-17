@@ -36,20 +36,35 @@ export default async function TrangBienSoan(props: Props) {
       ? (searchParams.beMat as BeMat)
       : 'fanpage';
 
+  let tenTruCot: string | null = null;
+  let tenChanDung: string | null = null;
+  let khamPha: boolean = false;
+
   if (searchParams.ideaId) {
     const yTuong = await repo.yTuong.layTheoId(searchParams.ideaId);
     if (yTuong) {
       beMat = yTuong.beMat as BeMat;
       gocTiepCan = yTuong.gocTiepCan ?? gocTiepCan;
       cauMoDau = yTuong.cauMoDau ?? cauMoDau;
+      khamPha = Boolean(yTuong.khamPha);
       if (!tieuDe) {
         tieuDe = yTuong.cauMoDau ?? yTuong.gocTiepCan ?? '';
+      }
+
+      if (yTuong.pillarId) {
+        const pillar = await repo.truCot.layTheoId(yTuong.pillarId);
+        if (pillar) tenTruCot = pillar.ten;
+      }
+
+      if (yTuong.personaId) {
+        const persona = await repo.chanDung.layTheoId(yTuong.personaId);
+        if (persona) tenChanDung = persona.ten;
       }
     }
   }
 
   return (
-    <>
+    <div className="studio-container">
       <div className="page-head">
         <div className="page-head__text">
           <span className="eyebrow">
@@ -69,7 +84,10 @@ export default async function TrangBienSoan(props: Props) {
         khoiTaoCauMoDau={cauMoDau}
         khoiTaoGocTiepCan={gocTiepCan}
         ideaId={searchParams.ideaId}
+        tenTruCot={tenTruCot}
+        tenChanDung={tenChanDung}
+        khamPha={khamPha}
       />
-    </>
+    </div>
   );
 }
