@@ -186,7 +186,7 @@ export function ManBienSoan({
         </div>
       )}
 
-      {/* Bố cục 2 cột Studio */}
+      {/* Bố cục 2 cột Studio thoáng đãng */}
       <div className="bien-soan-layout">
         {/* CỘT TRÁI: THIẾT LẬP VÀ ĐẦU VÀO */}
         <div className="bien-soan-panel">
@@ -203,7 +203,7 @@ export function ManBienSoan({
             <div className="idea-context-card">
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <span style={{ fontSize: 11.5, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--brand-600)' }}>
-                  💡 Ý tưởng đã chọn từ Đề xuất
+                  💡 Ý tưởng đã chọn
                 </span>
                 <Link
                   href="/studio/de-xuat"
@@ -233,48 +233,26 @@ export function ManBienSoan({
             </div>
           )}
 
-          {/* Chọn bề mặt (Platform Grid 2x2) */}
+          {/* Chọn bề mặt (Platform Tabs ngang thanh thoát) */}
           <div className="form-field">
             <label className="form-field__label">
-              <span>Bề mặt đăng bài</span>
+              <span>Bề mặt đăng bài mục tiêu</span>
               <span style={{ fontSize: 11.5, color: 'var(--ink-2)', fontWeight: 400 }}>
                 Chuẩn: <b>{DANH_SACH_BE_MAT.find((b) => b.id === beMat)?.khoangTu}</b>
               </span>
             </label>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+            <div className="be-mat-tabs">
               {DANH_SACH_BE_MAT.map((b) => (
                 <button
                   key={b.id}
                   type="button"
                   onClick={() => setBeMat(b.id)}
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'flex-start',
-                    padding: '10px 12px',
-                    borderRadius: 'var(--r-md)',
-                    border: beMat === b.id ? '1.5px solid var(--brand-500)' : '1px solid var(--line)',
-                    background: beMat === b.id ? 'var(--brand-050)' : 'var(--surface-2)',
-                    cursor: 'pointer',
-                    textAlign: 'left',
-                    transition: 'all 0.15s ease',
-                  }}
+                  className={`be-mat-tab ${beMat === b.id ? 'be-mat-tab--active' : ''}`}
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', marginBottom: 3 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <Icon name={b.icon} size={13} />
-                      <span style={{ fontSize: 12.5, fontWeight: 600, color: beMat === b.id ? 'var(--brand-700)' : 'var(--ink)' }}>
-                        {b.ten}
-                      </span>
-                    </div>
-                    {beMat === b.id && (
-                      <span style={{ color: 'var(--brand-500)' }}>
-                        <Icon name="i-check" size={12} />
-                      </span>
-                    )}
-                  </div>
-                  <span style={{ fontSize: 10.5, color: 'var(--ink-2)' }}>{b.khoangTu}</span>
+                  <Icon name={b.icon} size={15} />
+                  <span className="be-mat-tab__ten">{b.ten.replace(' Facebook', '').replace(' Short Video', '')}</span>
+                  <span className="be-mat-tab__badge">{b.khoangTu}</span>
                 </button>
               ))}
             </div>
@@ -285,13 +263,13 @@ export function ManBienSoan({
             <label className="form-field__label">
               <span>Chủ đề / Tiêu đề ý tưởng *</span>
             </label>
-            <input
-              type="text"
+            <textarea
               className="input"
+              rows={2}
               value={tieuDe}
               onChange={(e) => setTieuDe(e.target.value)}
               placeholder="VD: Bí quyết quay video triệu view bằng điện thoại..."
-              style={{ width: '100%' }}
+              style={{ width: '100%', resize: 'vertical', minHeight: 64, lineHeight: 1.5 }}
             />
           </div>
 
@@ -300,13 +278,13 @@ export function ManBienSoan({
             <label className="form-field__label">
               <span>Góc tiếp cận (Tùy chọn)</span>
             </label>
-            <input
-              type="text"
+            <textarea
               className="input"
+              rows={2}
               value={gocTiepCan}
               onChange={(e) => setGocTiepCan(e.target.value)}
               placeholder="VD: Đứng ở góc nhìn người mới bắt đầu, ngân sách 0đ..."
-              style={{ width: '100%' }}
+              style={{ width: '100%', resize: 'vertical', minHeight: 60, lineHeight: 1.5 }}
             />
           </div>
 
@@ -317,28 +295,41 @@ export function ManBienSoan({
             </label>
             <textarea
               className="input"
+              rows={3}
               value={cauMoDau}
               onChange={(e) => setCauMoDau(e.target.value)}
               placeholder="VD: Đừng vội mua máy quay đắt tiền nếu bạn chưa biết điều này..."
-              rows={2}
-              style={{ width: '100%', resize: 'vertical' }}
+              style={{ width: '100%', resize: 'vertical', minHeight: 76, lineHeight: 1.5 }}
             />
           </div>
 
-          {/* Ép độ dài cố định */}
-          <div className="form-field">
-            <label className="form-field__label">
-              <span>Ép độ dài cố định (Số từ)</span>
-              <span className="form-field__hint">Để trống = theo chuẩn bề mặt</span>
-            </label>
-            <input
-              type="number"
-              className="input"
-              value={epDoDai}
-              onChange={(e) => setEpDoDai(e.target.value)}
-              placeholder="VD: 200 (Ràng buộc cứng số từ)"
-              style={{ width: '100%' }}
-            />
+          {/* Ép độ dài cố định - Thiết kế widget ngang tinh gọn */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '12px 14px',
+              background: 'var(--surface-2)',
+              borderRadius: 'var(--r-md)',
+              border: '1px solid var(--line)',
+            }}
+          >
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--ink)' }}>Ép độ dài cố định</div>
+              <div style={{ fontSize: 11.5, color: 'var(--ink-2)' }}>Để trống = theo chuẩn bề mặt</div>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <input
+                type="number"
+                className="input"
+                value={epDoDai}
+                onChange={(e) => setEpDoDai(e.target.value)}
+                placeholder="Số từ..."
+                style={{ width: 100, padding: '6px 10px', fontSize: 13, textAlign: 'center' }}
+              />
+              <span style={{ fontSize: 12.5, color: 'var(--ink-2)', fontWeight: 500 }}>từ</span>
+            </div>
           </div>
 
           {/* CTA Button Sinh bài */}
@@ -348,15 +339,15 @@ export function ManBienSoan({
             onClick={handleSinhBai}
             disabled={dangSinh}
             style={{
-              padding: '13px 18px',
-              fontSize: 14,
+              padding: '13px 20px',
+              fontSize: 14.5,
               fontWeight: 600,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               gap: 8,
-              marginTop: 6,
-              boxShadow: '0 2px 6px rgba(234, 88, 12, 0.25)',
+              marginTop: 4,
+              boxShadow: 'var(--shadow-brand)',
             }}
           >
             <Icon name="i-sparkle" size={16} />
@@ -365,7 +356,7 @@ export function ManBienSoan({
         </div>
 
         {/* CỘT PHẢI: TRÌNH SOẠN THẢO VÀ THANH CÔNG CỤ THÔNG MINH */}
-        <div className="bien-soan-panel">
+        <div className="bien-soan-panel" style={{ minHeight: 640 }}>
           <div className="bien-soan-panel__head">
             <h2 className="bien-soan-panel__title">
               <span className="bien-soan-badge-step" style={{ background: 'var(--ink-2)' }}>2</span>
@@ -416,7 +407,7 @@ export function ManBienSoan({
           <div className="editor-shell">
             <div className="editor-toolbar">
               <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--ink-2)' }}>
-                Văn bản bài đăng ({beMat.toUpperCase()})
+                Văn bản bài đăng ({DANH_SACH_BE_MAT.find((b) => b.id === beMat)?.ten})
               </span>
 
               <div className="editor-toolbar__actions">

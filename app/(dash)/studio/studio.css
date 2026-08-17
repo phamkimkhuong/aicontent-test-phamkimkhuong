@@ -1,7 +1,8 @@
 /* Studio (Phase 9) — dung lai lop cua brand.css, chi them phan rieng. */
 
 .studio-container {
-  max-width: 1200px;
+  max-width: 1520px;
+  width: 100%;
   margin: 0 auto;
 }
 
@@ -101,6 +102,67 @@
   font-size: 12px;
   color: var(--ink-2);
   line-height: 1.4;
+}
+
+/* Modern Segmented Platform Tabs for Editor */
+.be-mat-tabs {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  background: var(--surface-2);
+  padding: 5px;
+  border-radius: var(--r-lg);
+  border: 1px solid var(--line);
+}
+
+@media (max-width: 640px) {
+  .be-mat-tabs {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.be-mat-tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  padding: 10px 8px;
+  border-radius: var(--r-md);
+  border: 1px solid transparent;
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: center;
+  color: var(--ink-2);
+}
+
+.be-mat-tab:hover {
+  background: var(--surface);
+  color: var(--ink);
+}
+
+.be-mat-tab--active {
+  background: var(--surface);
+  border-color: var(--brand-500);
+  box-shadow: 0 1px 3px rgba(226, 121, 30, 0.12), var(--shadow-sm);
+  color: var(--brand-600);
+}
+
+.be-mat-tab__ten {
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.be-mat-tab__badge {
+  font-size: 10px;
+  color: var(--ink-3);
+}
+
+.be-mat-tab--active .be-mat-tab__badge {
+  color: var(--brand-700);
+  font-weight: 600;
 }
 
 /* Thanh điều khiển số lượng + nút sinh đề xuất */
@@ -260,8 +322,9 @@
   font-size: 12.5px;
   color: var(--ink-2);
   display: flex;
-  align-items: baseline;
+  align-items: flex-start;
   gap: 6px;
+  line-height: 1.45;
 }
 
 .ytuong-card__foot {
@@ -272,57 +335,39 @@
   border-top: 1px solid var(--line);
 }
 
-.chon-be-mat {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-/* O soan bai: van ban + dong do dai + canh bao tu ngu. */
-.soan {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.soan__o {
-  width: 100%;
-  min-height: 220px;
-  resize: vertical;
-}
-
-.soan__do {
+/* Thẻ số liệu tiến độ của Studio */
+.tien-do-card {
   display: flex;
   align-items: center;
-  gap: 10px;
-  font-size: 13px;
+  justify-content: space-between;
+  padding: 14px 18px;
+  border-radius: var(--r-lg);
+  border: 1px solid var(--line);
+  background: var(--surface);
+  gap: 16px;
 }
 
-/* Ba trang thai do dai phai phan biet duoc NGAY, khong phai doc chu moi hieu. */
-.soan__dem--dat {
-  color: var(--sage);
+.tien-do-card__info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
-.soan__dem--dai,
-.soan__dem--ngan {
-  color: var(--clay);
+.tien-do-card__title {
+  font-size: 13.5px;
   font-weight: 600;
+  color: var(--ink);
 }
 
-.soan__lech {
+.tien-do-card__sub {
+  font-size: 12px;
   color: var(--ink-2);
 }
 
-/* Thanh tien do cua lo sinh hang loat. */
-.tien-do {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin-bottom: 12px;
-}
-
 .tien-do__thanh {
-  height: 8px;
+  display: inline-block;
+  width: 100px;
+  height: 6px;
   border-radius: 999px;
   background: var(--line);
   overflow: hidden;
@@ -338,12 +383,12 @@
 /* Hai cot cua man bien soan — bo cuc studio sang tao chuyen nghiep */
 .bien-soan-layout {
   display: grid;
-  grid-template-columns: 440px 1fr;
-  gap: 24px;
+  grid-template-columns: minmax(480px, 520px) minmax(0, 1fr);
+  gap: 32px;
   align-items: start;
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 1180px) {
   .bien-soan-layout {
     grid-template-columns: 1fr;
   }
@@ -352,8 +397,8 @@
 .bien-soan-panel {
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  padding: 24px;
+  gap: 22px;
+  padding: 26px 28px;
   border-radius: var(--r-xl);
   border: 1px solid var(--line);
   background: var(--surface);
@@ -364,17 +409,17 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding-bottom: 14px;
+  padding-bottom: 16px;
   border-bottom: 1px solid var(--line);
 }
 
 .bien-soan-panel__title {
-  font-size: 15.5px;
+  font-size: 16px;
   font-weight: 700;
   color: var(--ink);
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   margin: 0;
 }
 
@@ -382,13 +427,74 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
   background: var(--brand-500);
   color: #fff;
-  font-size: 12px;
+  font-size: 12.5px;
   font-weight: 700;
+}
+
+/* Modern Segmented Platform Tabs for Editor */
+.be-mat-tabs {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  background: var(--surface-2);
+  padding: 6px;
+  border-radius: var(--r-lg);
+  border: 1px solid var(--line);
+}
+
+@media (max-width: 640px) {
+  .be-mat-tabs {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.be-mat-tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 12px 8px;
+  border-radius: var(--r-md);
+  border: 1.5px solid transparent;
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.2s var(--ease);
+  text-align: center;
+  color: var(--ink-2);
+}
+
+.be-mat-tab:hover {
+  background: var(--surface);
+  color: var(--ink);
+}
+
+.be-mat-tab--active {
+  background: var(--surface);
+  border-color: var(--brand-500);
+  box-shadow: 0 2px 8px rgba(226, 121, 30, 0.16), var(--shadow-sm);
+  color: var(--brand-600);
+}
+
+.be-mat-tab__ten {
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.be-mat-tab__badge {
+  font-size: 10.5px;
+  color: var(--ink-3);
+}
+
+.be-mat-tab--active .be-mat-tab__badge {
+  color: var(--brand-700);
+  font-weight: 600;
 }
 
 /* Thẻ tóm tắt ý tưởng gốc được truyền từ Mốc 1 */
@@ -399,7 +505,7 @@
   border: 1px solid var(--line);
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
 
 .idea-context-card__tags {
@@ -445,16 +551,19 @@
   border: 1px solid var(--line);
   background: var(--surface);
   overflow: hidden;
-  box-shadow: inset 0 1px 2px rgba(0,0,0,0.02);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.02);
 }
 
 .editor-toolbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 14px;
+  padding: 10px 16px;
   background: var(--surface-2);
   border-bottom: 1px solid var(--line);
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--ink-2);
   flex-wrap: wrap;
   gap: 8px;
 }
@@ -462,7 +571,7 @@
 .editor-toolbar__actions {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
 
 .editor-btn {
@@ -488,20 +597,21 @@
 
 .editor-textarea {
   width: 100%;
-  min-height: 280px;
-  padding: 16px;
+  min-height: 450px;
+  padding: 22px 24px;
   border: none;
   background: transparent;
   color: var(--ink);
-  font-size: 14.5px;
-  line-height: 1.68;
   font-family: inherit;
+  font-size: 15px;
+  line-height: 1.75;
   resize: vertical;
   outline: none;
+  box-sizing: border-box;
 }
 
 .editor-textarea:focus {
-  background: rgba(var(--brand-500-rgb, 234, 88, 12), 0.015);
+  background: rgba(226, 121, 30, 0.015);
 }
 
 /* Thanh đo độ dài visual */
@@ -553,7 +663,7 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  padding: 4px 9px;
+  padding: 4px 10px;
   border-radius: var(--r-pill);
   background: rgba(59, 130, 246, 0.08);
   border: 1px solid rgba(59, 130, 246, 0.25);
