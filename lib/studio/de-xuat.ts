@@ -16,7 +16,6 @@
  */
 
 import { createRepo } from '@/lib/data-access';
-import type { NguoiDungTuPhien } from '@/lib/data-access/guard';
 import type { ChanDung } from '@/lib/data-access/personas';
 import type { Insight } from '@/lib/data-access/insights';
 import type { TruCot } from '@/lib/data-access/content-pillars';
@@ -24,6 +23,7 @@ import { chayNhiemVu } from '@/lib/model-runner';
 import { daBocXong, type CongThuc } from './boc-cong-thuc';
 
 import type { BeMat, KetQuaStudio, ThamSoDeXuat, YTuongDeXuat } from './kieu';
+export type { BeMat, KetQuaStudio, ThamSoDeXuat, YTuongDeXuat };
 
 // ---------------------------------------------------------------------------
 // Hang so

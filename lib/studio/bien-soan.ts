@@ -142,9 +142,9 @@ export async function sinhBaiViet(
     hashtag?: string[];
   };
 
-  const tieuDeKet = (traVe.tieuDe ?? finalTieuDe ?? '').trim();
-  const noiDungKet = (traVe.noiDung ?? '').trim();
-  const hashtagKet = Array.isArray(traVe.hashtag)
+  let tieuDeKet = (traVe.tieuDe ?? finalTieuDe ?? '').trim();
+  let noiDungKet = (traVe.noiDung ?? '').trim();
+  let hashtagKet = Array.isArray(traVe.hashtag)
     ? traVe.hashtag.filter((h): h is string => typeof h === 'string' && h.trim() !== '')
     : [];
 
@@ -158,8 +158,56 @@ export async function sinhBaiViet(
   }
 
   // Kiem tra do dai theo chuan be mat hoac epDoDai
-  const doDai = kiemDoDai(finalBeMat, noiDungKet, typeof epDoDai === 'number' ? epDoDai : null);
-  if (!doDai.dat) {
+  let doDai = kiemDoDai(finalBeMat, noiDungKet, typeof epDoDai === 'number' ? epDoDai : null);
+
+  // Neu co rang buoc epDoDai ma lan dau chua dat -> thu retry 1 lan voi nhac nho cu the
+  if (typeof epDoDai === 'number' && epDoDai > 0 && !doDai.dat) {
+    try {
+      const duLieuVaoRetry = {
+        ...duLieuVao,
+        yeuCauBoSung: `Lần viết trước sinh ${doDai.soTu} từ, chưa đạt ràng buộc ép ${epDoDai} từ. Hãy viết lại chính xác khoảng ${epDoDai} từ.`,
+      };
+      const retryRes = await chayNhiemVu({
+        nhiemVu: 'viet-bai',
+        duLieuVao: duLieuVaoRetry,
+        moHinh: 'auto',
+        khongGianLamViec: workspaceId,
+        khoaChongTrung: null,
+      });
+
+      if (retryRes.trangThai === 'xong' && retryRes.ketQua) {
+        const retryTraVe = retryRes.ketQua as {
+          tieuDe?: string;
+          noiDung?: string;
+          hashtag?: string[];
+        };
+        const retryNoiDung = (retryTraVe.noiDung ?? '').trim();
+        if (retryNoiDung) {
+          const retryDoDai = kiemDoDai(finalBeMat, retryNoiDung, epDoDai);
+          if (retryDoDai.dat || Math.abs(retryDoDai.soTu - epDoDai) < Math.abs(doDai.soTu - epDoDai)) {
+            noiDungKet = retryNoiDung;
+            tieuDeKet = (retryTraVe.tieuDe ?? tieuDeKet).trim();
+            if (Array.isArray(retryTraVe.hashtag)) {
+              hashtagKet = retryTraVe.hashtag.filter((h): h is string => typeof h === 'string' && h.trim() !== '');
+            }
+            doDai = retryDoDai;
+          }
+        }
+      }
+    } catch {
+      // Bo qua loi network cua retry de tiep tuc danh gia
+    }
+
+    // Neu sau retry van khong dat rang buoc ep do dai BAT BUOC -> tra ve loi
+    if (!doDai.dat) {
+      return {
+        trangThai: 'loi',
+        ketQua: null,
+        loi: `Không đạt ràng buộc ép độ dài bắt buộc: ${doDai.moTa}`,
+        canhBao,
+      };
+    }
+  } else if (!doDai.dat) {
     canhBao.push(`Độ dài bài viết: ${doDai.moTa}`);
   }
 
