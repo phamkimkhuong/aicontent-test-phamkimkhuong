@@ -222,10 +222,10 @@ function apDungLargestRemainder(
 
 /**
  * Rai N y tuong theo ti le tru cot muc tieu
- * va uu tien duy tri ti le y tuong kham pha muc tieu.
+ * va uu tien duy tri ti le y tuong kham pha muc tieu tu candidate pool.
  *
- * `khamPha` la thuoc tinh cua y tuong da duoc xac dinh truoc do.
- * Ham nay chi chon candidate, khong thay doi `khamPha`.
+ * `khamPha` la thuoc tinh cua y tuong do model/logic xac dinh.
+ * Ham nay chi CHON candidate tu pool, KHONG mutate gia tri `khamPha` (semantic immutability).
  */
 export function raiTheoTruCot(
   yTuongTho: YTuongDeXuat[],
@@ -233,69 +233,92 @@ export function raiTheoTruCot(
   soLuong: number,
 ): YTuongDeXuat[] {
   if (!Number.isSafeInteger(soLuong) || soLuong <= 0 || yTuongTho.length === 0) return [];
+
+  // Truong hop khong co tru cot muc tieu -> chon theo ti le kham pha
   if (truCotMucTieu.length === 0) {
-    const ket = yTuongTho.slice(0, soLuong).map((y) => ({ ...y }));
-    return dieuChinhTiLeKhamPha(ket, soLuong);
+    return chonTheoTiLeKhamPha(yTuongTho, soLuong);
   }
 
   const choTheoTruCot = phanBoCho(truCotMucTieu, soLuong);
+  const soKhamPhaMucTieu = Math.round(soLuong * TI_LE_KHAM_PHA);
+  let soKhamPhaDaChon = 0;
+
   const daChon = new Set<number>();
   const ketQua: YTuongDeXuat[] = [];
 
-  // Buoc 1: Dien theo tru cot
+  // Luot 1: Dien theo tru cot, UU TIEN candidate khamPha = true neu con ngan sach kham pha
   for (const { ten, soCho } of choTheoTruCot) {
     let daDien = 0;
     const tenThuong = ten.toLowerCase().trim();
+
+    // 1a. Uu tien chon candidate khamPha = true truoc cho den khi du ngan sach kham pha
+    for (
+      let i = 0;
+      i < yTuongTho.length && daDien < soCho && soKhamPhaDaChon < soKhamPhaMucTieu;
+      i++
+    ) {
+      if (daChon.has(i)) continue;
+      const y = yTuongTho[i];
+      if (y.khamPha && y.truCot && y.truCot.toLowerCase().trim() === tenThuong) {
+        ketQua.push(y);
+        daChon.add(i);
+        daDien++;
+        soKhamPhaDaChon++;
+      }
+    }
+
+    // 1b. Dien tiep cac candidate grounded (khamPha = false)
     for (let i = 0; i < yTuongTho.length && daDien < soCho; i++) {
       if (daChon.has(i)) continue;
-      const tc = yTuongTho[i].truCot;
-      if (tc && tc.toLowerCase().trim() === tenThuong) {
-        ketQua.push({ ...yTuongTho[i] });
+      const y = yTuongTho[i];
+      if (!y.khamPha && y.truCot && y.truCot.toLowerCase().trim() === tenThuong) {
+        ketQua.push(y);
         daChon.add(i);
         daDien++;
       }
     }
+
+    // 1c. Neu van chua du soCho cua tru cot nay -> moi lay tiep candidate khamPha con du
+    for (let i = 0; i < yTuongTho.length && daDien < soCho; i++) {
+      if (daChon.has(i)) continue;
+      const y = yTuongTho[i];
+      if (y.truCot && y.truCot.toLowerCase().trim() === tenThuong) {
+        ketQua.push(y);
+        daChon.add(i);
+        daDien++;
+        if (y.khamPha) soKhamPhaDaChon++;
+      }
+    }
   }
 
-  // Buoc 2: Cho trong con lai — dien bang y tuong chua chon
+  // Luot 2: Cho trong con lai (do tru cot thieu candidate) -> dien bang candidate chua chon
   for (let i = 0; i < yTuongTho.length && ketQua.length < soLuong; i++) {
     if (!daChon.has(i)) {
-      ketQua.push({ ...yTuongTho[i] });
+      ketQua.push(yTuongTho[i]);
       daChon.add(i);
     }
   }
 
-  // Buoc 3: Enforce TI_LE_KHAM_PHA (20%)
-  const daRai = ketQua.slice(0, soLuong);
-  return dieuChinhTiLeKhamPha(daRai, soLuong);
+  return ketQua.slice(0, soLuong);
 }
 
 /**
- * Dam bao so luong y tuong khamPha bang dung Math.round(soLuong * TI_LE_KHAM_PHA).
+ * Chon N y tuong tu pool khi khong co tru cot muc tieu, uu tien dung ty le kham pha.
  */
-function dieuChinhTiLeKhamPha(ds: YTuongDeXuat[], soLuong: number): YTuongDeXuat[] {
-  const soKhamPhaMucTieu = Math.round(ds.length * TI_LE_KHAM_PHA);
-  let soKhamPhaHienTai = ds.filter((y) => y.khamPha).length;
+function chonTheoTiLeKhamPha(pool: YTuongDeXuat[], soLuong: number): YTuongDeXuat[] {
+  const soKhamPhaMucTieu = Math.round(soLuong * TI_LE_KHAM_PHA);
+  const khamPha = pool.filter((y) => y.khamPha);
+  const grounded = pool.filter((y) => !y.khamPha);
 
-  if (soKhamPhaHienTai < soKhamPhaMucTieu) {
-    // Chuyen mot so y tuong false -> true tu cuoi danh sach len
-    for (let i = ds.length - 1; i >= 0 && soKhamPhaHienTai < soKhamPhaMucTieu; i--) {
-      if (!ds[i].khamPha) {
-        ds[i].khamPha = true;
-        soKhamPhaHienTai++;
-      }
-    }
-  } else if (soKhamPhaHienTai > soKhamPhaMucTieu) {
-    // Chuyen mot so y tuong true -> false tu cuoi danh sach len
-    for (let i = ds.length - 1; i >= 0 && soKhamPhaHienTai > soKhamPhaMucTieu; i--) {
-      if (ds[i].khamPha) {
-        ds[i].khamPha = false;
-        soKhamPhaHienTai--;
-      }
-    }
+  const chonKhamPha = khamPha.slice(0, soKhamPhaMucTieu);
+  const chonGrounded = grounded.slice(0, soLuong - chonKhamPha.length);
+
+  const ketQua = [...chonKhamPha, ...chonGrounded];
+  if (ketQua.length < soLuong) {
+    const duKhamPha = khamPha.slice(soKhamPhaMucTieu);
+    ketQua.push(...duKhamPha.slice(0, soLuong - ketQua.length));
   }
-
-  return ds;
+  return ketQua.slice(0, soLuong);
 }
 
 // ---------------------------------------------------------------------------

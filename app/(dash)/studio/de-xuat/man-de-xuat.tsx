@@ -25,11 +25,41 @@ type Props = {
   yTuongDaLuu: YTuongDaLuu[];
 };
 
-const DANH_SACH_BE_MAT: { id: BeMat; ten: string; moTa: string }[] = [
-  { id: 'fanpage', ten: 'Fanpage Facebook', moTa: 'Nuôi dưỡng niềm tin, demo chuyên sâu (150–300 từ)' },
-  { id: 'tiktok', ten: 'TikTok', moTa: 'Hook nhanh 1–2s, chứng minh trực quan (60–120 từ)' },
-  { id: 'ho_so_ca_nhan', ten: 'Trang cá nhân', moTa: 'Người thật kể chuyện, trải nghiệm thực tế (120–250 từ)' },
-  { id: 'zalo', ten: 'Zalo cá nhân', moTa: 'Thân mật như nhắn tin, kết thúc bằng câu hỏi mở (40–100 từ)' },
+const DANH_SACH_BE_MAT: {
+  id: BeMat;
+  ten: string;
+  moTa: string;
+  soTu: string;
+  icon: string;
+}[] = [
+  {
+    id: 'fanpage',
+    ten: 'Fanpage Facebook',
+    moTa: 'Nuôi dưỡng niềm tin, demo chuyên sâu',
+    soTu: '150–300 từ',
+    icon: 'i-layers',
+  },
+  {
+    id: 'tiktok',
+    ten: 'TikTok Video',
+    moTa: 'Hook nhanh 1–2s, chứng minh trực quan',
+    soTu: '60–120 từ',
+    icon: 'i-sparkle',
+  },
+  {
+    id: 'ho_so_ca_nhan',
+    ten: 'Trang cá nhân',
+    moTa: 'Người thật kể chuyện, trải nghiệm thực tế',
+    soTu: '120–250 từ',
+    icon: 'i-person',
+  },
+  {
+    id: 'zalo',
+    ten: 'Zalo cá nhân',
+    moTa: 'Thân mật như nhắn tin, kết thúc câu hỏi mở',
+    soTu: '40–100 từ',
+    icon: 'i-text',
+  },
 ];
 
 export function ManDeXuat({ dsTruCot, dsChanDung, yTuongDaLuu }: Props) {
@@ -57,48 +87,63 @@ export function ManDeXuat({ dsTruCot, dsChanDung, yTuongDaLuu }: Props) {
   }
 
   return (
-    <div className="studio-de-xuat">
-      {/* 1. Bảng điều khiển bộ sinh */}
-      <div className="panel" style={{ marginBottom: 20 }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+    <div className="studio-container">
+      {/* 1. Bảng điều khiển bộ sinh ý tưởng */}
+      <div className="panel" style={{ marginBottom: 24 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
           <div>
-            <label style={{ fontWeight: 600, display: 'block', marginBottom: 8 }}>
-              1. Chọn bề mặt đăng bài
-            </label>
-            <div className="chon-be-mat">
-              {DANH_SACH_BE_MAT.map((b) => (
-                <button
-                  key={b.id}
-                  type="button"
-                  className={`btn ${beMat === b.id ? 'btn--primary' : ''}`}
-                  onClick={() => setBeMat(b.id)}
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'flex-start',
-                    padding: '8px 14px',
-                    textAlign: 'left',
-                    minWidth: 180,
-                  }}
-                >
-                  <span style={{ fontWeight: 600 }}>{b.ten}</span>
-                  <span style={{ fontSize: 11, opacity: 0.8 }}>{b.moTa}</span>
-                </button>
-              ))}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <label style={{ fontSize: 13.5, fontWeight: 700, letterSpacing: '-0.01em' }}>
+                1. Chọn bề mặt đăng bài mục tiêu
+              </label>
+              <span style={{ fontSize: 12, color: 'var(--ink-3)' }}>
+                Định dạng &amp; độ dài được tối ưu tự động
+              </span>
+            </div>
+
+            <div className="chon-be-mat-grid">
+              {DANH_SACH_BE_MAT.map((b) => {
+                const isActive = beMat === b.id;
+                return (
+                  <div
+                    key={b.id}
+                    role="button"
+                    tabIndex={0}
+                    className={`be-mat-card ${isActive ? 'be-mat-card--active' : ''}`}
+                    onClick={() => setBeMat(b.id)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        setBeMat(b.id);
+                      }
+                    }}
+                  >
+                    <div className="be-mat-card__head">
+                      <div className="be-mat-card__icon">
+                        <Icon name={b.icon} size={16} />
+                      </div>
+                      <span className="be-mat-card__badge">{b.soTu}</span>
+                    </div>
+                    <div className="be-mat-card__ten">{b.ten}</div>
+                    <div className="be-mat-card__mota">{b.moTa}</div>
+                  </div>
+                );
+              })}
             </div>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap' }}>
-            <div>
-              <label style={{ fontWeight: 600, display: 'block', marginBottom: 6 }}>
-                2. Số lượng ý tưởng
-              </label>
-              <div style={{ display: 'flex', gap: 6 }}>
+          {/* Thanh điều khiển số lượng + nút sinh */}
+          <div className="dieu-khien-bar">
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+              <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--ink-2)' }}>
+                2. Số lượng ý tưởng:
+              </span>
+              <div className="segmented-group">
                 {[3, 5, 10].map((n) => (
                   <button
                     key={n}
                     type="button"
-                    className={`btn btn--sm ${soLuong === n ? 'btn--primary' : ''}`}
+                    className={`segmented-btn ${soLuong === n ? 'segmented-btn--active' : ''}`}
                     onClick={() => setSoLuong(n)}
                   >
                     {n} ý tưởng
@@ -107,13 +152,20 @@ export function ManDeXuat({ dsTruCot, dsChanDung, yTuongDaLuu }: Props) {
               </div>
             </div>
 
-            <div style={{ alignSelf: 'flex-end', marginLeft: 'auto' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               <button
                 type="button"
                 className="btn btn--primary"
                 onClick={handleSinhDeXuat}
                 disabled={dangSinh}
-                style={{ padding: '10px 20px', fontSize: 14 }}
+                style={{
+                  padding: '10px 22px',
+                  fontSize: 14,
+                  fontWeight: 600,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 8,
+                }}
               >
                 <Icon name="i-sparkle" size={16} />
                 {dangSinh ? 'Đang suy nghĩ đề xuất...' : 'Sinh đề xuất hôm nay'}
@@ -123,7 +175,7 @@ export function ManDeXuat({ dsTruCot, dsChanDung, yTuongDaLuu }: Props) {
         </div>
       </div>
 
-      {/* Thông báo lỗi & Cảnh báo */}
+      {/* Thông báo lỗi nếu có */}
       {loi && (
         <div
           className="panel"
@@ -141,6 +193,7 @@ export function ManDeXuat({ dsTruCot, dsChanDung, yTuongDaLuu }: Props) {
         </div>
       )}
 
+      {/* Cảnh báo nếu có */}
       {canhBao.map((cb, idx) => (
         <div
           key={idx}
@@ -159,167 +212,120 @@ export function ManDeXuat({ dsTruCot, dsChanDung, yTuongDaLuu }: Props) {
         </div>
       ))}
 
-      {/* 2. Danh sách ý tưởng đề xuất vừa sinh */}
+      {/* Trạng thái đang tải */}
       {dangSinh && (
         <div className="panel" style={{ textAlign: 'center', padding: '48px 20px', marginBottom: 24 }}>
-          <div style={{ display: 'inline-block', marginBottom: 12 }}>
-            <Icon name="i-sparkle" size={32} />
+          <div style={{ display: 'inline-block', marginBottom: 12, color: 'var(--brand-500)' }}>
+            <Icon name="i-sparkle" size={36} />
           </div>
-          <h3 style={{ margin: '0 0 6px' }}>Đang tổng hợp dữ liệu và sinh ý tưởng...</h3>
-          <p style={{ margin: 0, color: 'var(--ink-2)', fontSize: 14 }}>
-            Đang phân tích {dsTruCot.length} trụ cột, {dsChanDung.length} chân dung và tín hiệu thị trường.
+          <h3 style={{ margin: '0 0 8px', fontSize: 17 }}>Đang phân tích dữ liệu và sinh ý tưởng...</h3>
+          <p style={{ margin: 0, color: 'var(--ink-2)', fontSize: 13.5 }}>
+            Đang đối chiếu {dsTruCot.length} trụ cột, {dsChanDung.length} chân dung và bài tham khảo từ kênh theo dõi.
           </p>
         </div>
       )}
 
+      {/* 2. Danh sách ý tưởng đề xuất vừa sinh */}
       {!dangSinh && danhSachYTuong.length > 0 && (
         <div style={{ marginBottom: 32 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-            <h2 style={{ fontSize: 18, margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
-              <Icon name="i-sparkle" size={18} />
-              Ý tưởng đề xuất ({danhSachYTuong.length})
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+            <h2 style={{ fontSize: 18, margin: 0, display: 'flex', alignItems: 'center', gap: 8, fontWeight: 700 }}>
+              <Icon name="i-sparkle" size={20} />
+              Ý tưởng đề xuất hôm nay ({danhSachYTuong.length})
             </h2>
-            <span style={{ fontSize: 13, color: 'var(--ink-2)' }}>
-              Đã lưu tự động · Rải theo trụ cột · Khám phá 20%
+            <span style={{ fontSize: 12.5, color: 'var(--ink-2)' }}>
+              Đã tự động lưu vào kho ý tưởng
             </span>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             {danhSachYTuong.map((yt, idx) => (
-              <div
-                key={idx}
-                className="panel"
-                style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: 12,
-                  borderLeft: yt.khamPha ? '4px solid #f59e0b' : '4px solid var(--sage)',
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                  {yt.truCot && (
-                    <span
-                      style={{
-                        fontSize: 12,
-                        fontWeight: 600,
-                        padding: '3px 8px',
-                        borderRadius: 4,
-                        background: 'rgba(59, 130, 246, 0.1)',
-                        color: '#2563eb',
-                      }}
-                    >
-                      Trụ cột: {yt.truCot}
-                    </span>
-                  )}
-                  {yt.chanDung && (
-                    <span
-                      style={{
-                        fontSize: 12,
-                        padding: '3px 8px',
-                        borderRadius: 4,
-                        background: 'rgba(16, 185, 129, 0.1)',
-                        color: '#059669',
-                      }}
-                    >
-                      Chân dung: {yt.chanDung}
-                    </span>
-                  )}
-                  {yt.khamPha && (
-                    <span
-                      style={{
-                        fontSize: 11,
-                        fontWeight: 600,
-                        padding: '3px 8px',
-                        borderRadius: 4,
-                        background: 'rgba(245, 158, 11, 0.15)',
-                        color: '#b45309',
-                      }}
-                    >
-                      ⚡ Dò đường (Khám phá)
-                    </span>
-                  )}
-                  {yt.trendSignalId && (
-                    <span
-                      style={{
-                        fontSize: 11,
-                        padding: '3px 8px',
-                        borderRadius: 4,
-                        background: 'rgba(139, 92, 246, 0.1)',
-                        color: '#7c3aed',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: 4,
-                      }}
-                    >
-                      <span>📡 Từ xu hướng{yt.nguonThamKhao?.tenKenh ? ` (${yt.nguonThamKhao.tenKenh})` : ''}</span>
-                      {yt.nguonThamKhao?.lienKet && (
-                        <a
-                          href={yt.nguonThamKhao.lienKet}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          style={{
-                            color: '#7c3aed',
-                            textDecoration: 'underline',
-                            fontWeight: 600,
-                          }}
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          Xem bài gốc ↗
-                        </a>
-                      )}
-                    </span>
-                  )}
-                  <span
-                    style={{
-                      fontSize: 11,
-                      padding: '3px 8px',
-                      borderRadius: 4,
-                      background: 'var(--line)',
-                      color: 'var(--ink-2)',
-                      marginLeft: 'auto',
-                    }}
-                  >
-                    {yt.beMat}
-                  </span>
-                </div>
-
-                <div>
-                  <h3 style={{ margin: '0 0 6px', fontSize: 16, color: 'var(--ink)' }}>
-                    {yt.tieuDe}
-                  </h3>
-                  {yt.gocTiepCan && (
-                    <p style={{ margin: '0 0 6px', fontSize: 14, color: 'var(--ink-2)' }}>
-                      <b>Góc tiếp cận:</b> {yt.gocTiepCan}
-                    </p>
-                  )}
-                  {yt.cauMoDau && (
-                    <div
-                      style={{
-                        padding: '8px 12px',
-                        background: 'var(--line)',
-                        borderRadius: 6,
-                        fontSize: 13,
-                        fontStyle: 'italic',
-                        margin: '6px 0',
-                      }}
-                    >
-                      &ldquo;{yt.cauMoDau}&rdquo;
+              <div key={idx} className="ytuong-card">
+                {/* Header thẻ */}
+                <div className="ytuong-card__head">
+                  <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start', flex: 1 }}>
+                    <span className="ytuong-card__index">#{String(idx + 1).padStart(2, '0')}</span>
+                    <div style={{ flex: 1 }}>
+                      <h3 className="ytuong-card__tieu-de">{yt.tieuDe}</h3>
+                      <div className="ytuong-card__tags" style={{ marginTop: 8 }}>
+                        {yt.truCot && (
+                          <span className="ytuong-tag ytuong-tag--pillar">
+                            Trụ cột: {yt.truCot}
+                          </span>
+                        )}
+                        {yt.chanDung && (
+                          <span className="ytuong-tag ytuong-tag--persona">
+                            Chân dung: {yt.chanDung}
+                          </span>
+                        )}
+                        {yt.khamPha && (
+                          <span className="ytuong-tag ytuong-tag--khampha">
+                            ⚡ Dò đường (Khám phá)
+                          </span>
+                        )}
+                        {yt.trendSignalId && (
+                          <span className="ytuong-tag ytuong-tag--trend">
+                            📡 Từ xu hướng{yt.nguonThamKhao?.tenKenh ? ` (${yt.nguonThamKhao.tenKenh})` : ''}
+                            {yt.nguonThamKhao?.lienKet && (
+                              <a
+                                href={yt.nguonThamKhao.lienKet}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                style={{
+                                  color: '#7c3aed',
+                                  textDecoration: 'underline',
+                                  fontWeight: 600,
+                                  marginLeft: 4,
+                                }}
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                Xem bài gốc ↗
+                              </a>
+                            )}
+                          </span>
+                        )}
+                        <span className="ytuong-tag ytuong-tag--surface">
+                          {yt.beMat}
+                        </span>
+                      </div>
                     </div>
-                  )}
-                  {yt.lyDoDeXuat && (
-                    <p style={{ margin: '6px 0 0', fontSize: 12, color: 'var(--ink-2)' }}>
-                      💡 <i>Lý do: {yt.lyDoDeXuat}</i>
-                    </p>
-                  )}
+                  </div>
                 </div>
 
-                <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', paddingTop: 8, borderTop: '1px solid var(--line)' }}>
+                {/* Hook câu mở đầu */}
+                {yt.cauMoDau && (
+                  <div className="ytuong-card__hook">
+                    <span style={{ fontWeight: 600, color: 'var(--brand-600)', fontStyle: 'normal', marginRight: 6 }}>
+                      Hook mở đầu:
+                    </span>
+                    &ldquo;{yt.cauMoDau}&rdquo;
+                  </div>
+                )}
+
+                {/* Góc tiếp cận */}
+                {yt.gocTiepCan && (
+                  <p style={{ margin: 0, fontSize: 13.5, color: 'var(--ink-2)', lineHeight: 1.5 }}>
+                    <strong style={{ color: 'var(--ink)' }}>Góc tiếp cận:</strong> {yt.gocTiepCan}
+                  </p>
+                )}
+
+                {/* Lý do đề xuất */}
+                {yt.lyDoDeXuat && (
+                  <div className="ytuong-card__ly-do">
+                    <span>💡</span>
+                    <span><em>Lý do: {yt.lyDoDeXuat}</em></span>
+                  </div>
+                )}
+
+                {/* Footer action */}
+                <div className="ytuong-card__foot">
                   <Link
                     className="btn btn--sm btn--primary"
                     href={`/studio/bien-soan?tieuDe=${encodeURIComponent(yt.tieuDe)}&beMat=${yt.beMat}${yt.cauMoDau ? `&cauMoDau=${encodeURIComponent(yt.cauMoDau)}` : ''}`}
+                    style={{ fontWeight: 600, padding: '6px 14px' }}
                   >
                     <Icon name="i-text" size={14} />
-                    Biên soạn bài này
+                    Biên soạn bài này →
                   </Link>
                 </div>
               </div>
@@ -328,21 +334,24 @@ export function ManDeXuat({ dsTruCot, dsChanDung, yTuongDaLuu }: Props) {
         </div>
       )}
 
-      {/* 3. Danh sách ý tưởng đã lưu (từ DB — refresh vẫn thấy) */}
+      {/* 3. Danh sách ý tưởng đã lưu (từ CSDL) */}
       <div className="panel">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-          <h2 style={{ fontSize: 16, margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
+          <h2 style={{ fontSize: 16, margin: 0, display: 'flex', alignItems: 'center', gap: 8, fontWeight: 600 }}>
             <Icon name="i-folder" size={16} />
             Ý tưởng đã lưu gần đây ({yTuongDaLuu.length})
           </h2>
+          <span style={{ fontSize: 12, color: 'var(--ink-3)' }}>Tự động lưu từ CSDL</span>
         </div>
 
         {yTuongDaLuu.length === 0 ? (
-          <p style={{ color: 'var(--ink-2)', fontSize: 14, margin: 0 }}>
-            Chưa có ý tưởng nào được lưu. Hãy bấm nút sinh đề xuất ở trên để bắt đầu.
-          </p>
+          <div style={{ textAlign: 'center', padding: '24px 12px', color: 'var(--ink-3)' }}>
+            <p style={{ fontSize: 13.5, margin: 0 }}>
+              Chưa có ý tưởng nào được lưu. Hãy bấm nút <strong>Sinh đề xuất hôm nay</strong> ở trên để bắt đầu.
+            </p>
+          </div>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {yTuongDaLuu.map((y) => (
               <div
                 key={y.id}
@@ -350,29 +359,52 @@ export function ManDeXuat({ dsTruCot, dsChanDung, yTuongDaLuu }: Props) {
                   display: 'flex',
                   justifyContent: 'space-between',
                   alignItems: 'center',
-                  padding: '10px 14px',
-                  borderRadius: 6,
+                  padding: '12px 16px',
+                  borderRadius: 'var(--r-md)',
                   border: '1px solid var(--line)',
+                  background: 'var(--surface)',
                   gap: 12,
+                  transition: 'background 0.15s ease',
                 }}
               >
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginBottom: 4 }}>
-                    <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--ink-2)', background: 'var(--line)', padding: '2px 6px', borderRadius: 4 }}>
+                  <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 4 }}>
+                    <span
+                      style={{
+                        fontSize: 11,
+                        fontWeight: 600,
+                        color: 'var(--ink-2)',
+                        background: 'var(--surface-2)',
+                        border: '1px solid var(--line)',
+                        padding: '2px 6px',
+                        borderRadius: 4,
+                        textTransform: 'capitalize',
+                      }}
+                    >
                       {y.beMat}
                     </span>
                     {y.tenTruCot && (
-                      <span style={{ fontSize: 11, color: '#2563eb' }}>
+                      <span style={{ fontSize: 11.5, color: '#2563eb', fontWeight: 500 }}>
                         • {y.tenTruCot}
                       </span>
                     )}
                     {y.tenChanDung && (
-                      <span style={{ fontSize: 11, color: '#059669' }}>
+                      <span style={{ fontSize: 11.5, color: '#059669', fontWeight: 500 }}>
                         • {y.tenChanDung}
                       </span>
                     )}
                   </div>
-                  <p style={{ margin: 0, fontSize: 14, fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  <p
+                    style={{
+                      margin: 0,
+                      fontSize: 13.5,
+                      fontWeight: 500,
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      color: 'var(--ink)',
+                    }}
+                  >
                     {y.cauMoDau ?? y.gocTiepCan ?? y.lyDoDeXuat ?? '(Ý tưởng)'}
                   </p>
                 </div>
@@ -380,9 +412,9 @@ export function ManDeXuat({ dsTruCot, dsChanDung, yTuongDaLuu }: Props) {
                 <Link
                   className="btn btn--sm"
                   href={`/studio/bien-soan?ideaId=${y.id}`}
-                  style={{ whiteSpace: 'nowrap' }}
+                  style={{ whiteSpace: 'nowrap', fontSize: 12.5 }}
                 >
-                  <Icon name="i-text" size={14} />
+                  <Icon name="i-text" size={13} />
                   Biên soạn
                 </Link>
               </div>

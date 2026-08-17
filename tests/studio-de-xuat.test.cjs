@@ -157,10 +157,33 @@ test('raiTheoTruCot: Largest Remainder — tong output LUON bang soLuong', () =>
   }
 });
 
-test('raiTheoTruCot: enforce TI_LE_KHAM_PHA — co dung soKhamPha y tuong khamPha', () => {
-  // 10 y tuong, tat ca khamPha = false => phai co 2 khamPha sau khi rai
+test('raiTheoTruCot: enforce TI_LE_KHAM_PHA — uu tien chon dung soKhamPha tu candidate pool', () => {
+  // Pool 15 y tuong: 3 y tuong kham pha that, 12 y tuong grounded
   const ds = [];
   for (let i = 0; i < 15; i++) {
+    ds.push({
+      tieuDe: `Y${i}`,
+      truCot: 'A',
+      chanDung: null,
+      gocTiepCan: null,
+      cauMoDau: null,
+      lyDoDeXuat: null,
+      beMat: 'fanpage',
+      khamPha: i < 3, // 3 y tuong dau la kham pha
+    });
+  }
+  const truCot = [{ ten: 'A', tiLeMucTieu: 100 }];
+  const soLuong = 10;
+  const ket = raiTheoTruCot(ds, truCot, soLuong);
+  const soKhamPha = ket.filter((y) => y.khamPha).length;
+  const mucTieu = Math.round(soLuong * TI_LE_KHAM_PHA);
+  assert.equal(soKhamPha, mucTieu, `phai co dung ${mucTieu} y tuong khamPha, co ${soKhamPha}`);
+});
+
+test('raiTheoTruCot: semantic immutability — khong tu y mutate khamPha neu pool khong co', () => {
+  // Pool 10 y tuong deu la grounded (khamPha = false)
+  const ds = [];
+  for (let i = 0; i < 10; i++) {
     ds.push({
       tieuDe: `Y${i}`,
       truCot: 'A',
@@ -173,11 +196,9 @@ test('raiTheoTruCot: enforce TI_LE_KHAM_PHA — co dung soKhamPha y tuong khamPh
     });
   }
   const truCot = [{ ten: 'A', tiLeMucTieu: 100 }];
-  const soLuong = 10;
-  const ket = raiTheoTruCot(ds, truCot, soLuong);
+  const ket = raiTheoTruCot(ds, truCot, 10);
   const soKhamPha = ket.filter((y) => y.khamPha).length;
-  const mucTieu = Math.round(soLuong * TI_LE_KHAM_PHA);
-  assert.equal(soKhamPha, mucTieu, `phai co dung ${mucTieu} y tuong khamPha, co ${soKhamPha}`);
+  assert.equal(soKhamPha, 0, 'khong duoc tu y bien grounded thanh khamPha');
 });
 
 test('raiTheoTruCot: phan bo to the ratio correctly', () => {
