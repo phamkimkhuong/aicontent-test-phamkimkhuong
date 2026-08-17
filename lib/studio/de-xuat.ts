@@ -148,7 +148,7 @@ export function donKetQuaDeXuat(
  *   2. Tong floor < N → phan du = N - tong floor
  *   3. Sap xep theo phan le (fraction) giam dan, bo phan du vao
  */
-function phanBoCho(
+export function phanBoCho(
   truCotMucTieu: TruCotMucTieu[],
   soLuong: number,
 ): { ten: string; soCho: number }[] {
@@ -474,6 +474,9 @@ export async function deXuatYTuong(
   const dsTrendSignalId = thamKhao.map((tk) => tk.id);
 
   // --- 3. Dung du lieu dau vao cho mo hinh ---
+  const phanBoTruCot = phanBoCho(truCotMucTieu, soLuong);
+  const soLuongKhamPhaMucTieu = Math.round(soLuong * TI_LE_KHAM_PHA);
+
   const duLieuVao: Record<string, unknown> = {
     hoSo: {
       moTa: hoSo.moTa,
@@ -483,6 +486,10 @@ export async function deXuatYTuong(
     truCot: truCotDs.map((t: TruCot) => ({
       ten: t.ten,
       mucDich: t.mucDich,
+    })),
+    phanBoTruCot: phanBoTruCot.map((x) => ({
+      ten: x.ten,
+      soLuong: x.soCho,
     })),
     chanDung: chanDungDs.map((c: ChanDung) => ({
       ten: c.ten,
@@ -510,6 +517,7 @@ export async function deXuatYTuong(
     beMat,
     soLuong,
     tiLeKhamPha: TI_LE_KHAM_PHA,
+    soLuongKhamPhaMucTieu,
   };
 
   // --- 4. Goi mo hinh qua hang doi ---
