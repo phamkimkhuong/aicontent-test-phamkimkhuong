@@ -100,6 +100,7 @@ export function donKetQuaDeXuat(
   dsTruCot: string[] = [],
   dsChanDung: string[] = [],
   beMat: BeMat = 'fanpage',
+  dsTrendSignalId: string[] = [],
 ): YTuongDeXuat[] {
   if (!tho || typeof tho !== 'object') return [];
 
@@ -115,6 +116,17 @@ export function donKetQuaDeXuat(
     // Mo hinh co the tra `kham_pha` (snake_case) hoac `khamPha` (camelCase)
     const khamPhaRaw = m.kham_pha ?? m.khamPha;
 
+    // Be mat: uu tien gia tri mo hinh tra ve neu hop le
+    const beMatHopLe: BeMat =
+      typeof m.beMat === 'string' && BE_MAT_HOP_LE.includes(m.beMat as BeMat)
+        ? (m.beMat as BeMat)
+        : beMat;
+
+    // trendSignalId: chi chap nhan ID co that trong danh sach mauNgoai
+    const trendIdTho = chuoi(m.trendSignalId);
+    const trendSignalId =
+      trendIdTho && dsTrendSignalId.includes(trendIdTho) ? trendIdTho : null;
+
     ketQua.push({
       tieuDe,
       truCot: doiChieu(m.truCot, dsTruCot),
@@ -122,8 +134,9 @@ export function donKetQuaDeXuat(
       gocTiepCan: chuoi(m.gocTiepCan),
       cauMoDau: chuoi(m.cauMoDau),
       lyDoDeXuat: chuoi(m.lyDoDeXuat),
-      beMat,
-      khamPha: khamPhaRaw === true || khamPhaRaw === 'true'
+      beMat: beMatHopLe,
+      khamPha: khamPhaRaw === true || khamPhaRaw === 'true',
+      trendSignalId,
     });
   }
   return ketQua;
@@ -220,7 +233,10 @@ export function raiTheoTruCot(
   soLuong: number,
 ): YTuongDeXuat[] {
   if (!Number.isSafeInteger(soLuong) || soLuong <= 0 || yTuongTho.length === 0) return [];
-  if (truCotMucTieu.length === 0) return yTuongTho.slice(0, soLuong);
+  if (truCotMucTieu.length === 0) {
+    const ket = yTuongTho.slice(0, soLuong).map((y) => ({ ...y }));
+    return dieuChinhTiLeKhamPha(ket, soLuong);
+  }
 
   const choTheoTruCot = phanBoCho(truCotMucTieu, soLuong);
   const daChon = new Set<number>();
@@ -234,7 +250,7 @@ export function raiTheoTruCot(
       if (daChon.has(i)) continue;
       const tc = yTuongTho[i].truCot;
       if (tc && tc.toLowerCase().trim() === tenThuong) {
-        ketQua.push(yTuongTho[i]);
+        ketQua.push({ ...yTuongTho[i] });
         daChon.add(i);
         daDien++;
       }
@@ -244,38 +260,42 @@ export function raiTheoTruCot(
   // Buoc 2: Cho trong con lai — dien bang y tuong chua chon
   for (let i = 0; i < yTuongTho.length && ketQua.length < soLuong; i++) {
     if (!daChon.has(i)) {
-      ketQua.push(yTuongTho[i]);
+      ketQua.push({ ...yTuongTho[i] });
       daChon.add(i);
     }
   }
 
-  // Buoc 3: Enforce TI_LE_KHAM_PHA
+  // Buoc 3: Enforce TI_LE_KHAM_PHA (20%)
   const daRai = ketQua.slice(0, soLuong);
-  // Mo hinh co the tra it hon N y tuong hop le. Khi do chi co the ep ti le
-  // tren so y tuong that su tra ve, khong tao ban sao de du so luong.
-  const soKhamPhaMucTieu = Math.round(daRai.length * TI_LE_KHAM_PHA);
-  const yTuongKhamPha = daRai.filter((y) => y.khamPha);
-  const yTuongThuong = daRai.filter((y) => !y.khamPha);
-  let chonKhamPha: YTuongDeXuat[];
-  let chonThuong: YTuongDeXuat[];
+  return dieuChinhTiLeKhamPha(daRai, soLuong);
+}
 
-  if (yTuongKhamPha.length >= soKhamPhaMucTieu) {
-    chonKhamPha = yTuongKhamPha.slice(0, soKhamPhaMucTieu);
+/**
+ * Dam bao so luong y tuong khamPha bang dung Math.round(soLuong * TI_LE_KHAM_PHA).
+ */
+function dieuChinhTiLeKhamPha(ds: YTuongDeXuat[], soLuong: number): YTuongDeXuat[] {
+  const soKhamPhaMucTieu = Math.round(ds.length * TI_LE_KHAM_PHA);
+  let soKhamPhaHienTai = ds.filter((y) => y.khamPha).length;
 
-    // Phần còn lại lấy từ ý tưởng grounded.
-    chonThuong = yTuongThuong.slice(
-      0,
-      daRai.length - chonKhamPha.length,
-    );
-  } else {
-    chonKhamPha = yTuongKhamPha;
-
-    chonThuong = yTuongThuong.slice(
-      0,
-      daRai.length - chonKhamPha.length,
-    );
+  if (soKhamPhaHienTai < soKhamPhaMucTieu) {
+    // Chuyen mot so y tuong false -> true tu cuoi danh sach len
+    for (let i = ds.length - 1; i >= 0 && soKhamPhaHienTai < soKhamPhaMucTieu; i--) {
+      if (!ds[i].khamPha) {
+        ds[i].khamPha = true;
+        soKhamPhaHienTai++;
+      }
+    }
+  } else if (soKhamPhaHienTai > soKhamPhaMucTieu) {
+    // Chuyen mot so y tuong true -> false tu cuoi danh sach len
+    for (let i = ds.length - 1; i >= 0 && soKhamPhaHienTai > soKhamPhaMucTieu; i--) {
+      if (ds[i].khamPha) {
+        ds[i].khamPha = false;
+        soKhamPhaHienTai--;
+      }
+    }
   }
-  return [...chonKhamPha, ...chonThuong];
+
+  return ds;
 }
 
 // ---------------------------------------------------------------------------
@@ -413,6 +433,25 @@ export async function deXuatYTuong(
   // --- 2. Doc tin hieu xu huong (chi cong thuc ke, KHONG co noi dung goc) ---
   // Truc co lap thu 2: chi lay tin hieu cua cac kenh NGUOI NAY thuc su theo doi.
   let thamKhao: ThamKhaoXuHuong[] = [];
+  const mapNguonThamKhao = new Map<string, { tenKenh?: string | null; lienKet?: string | null }>();
+
+  if (thamSo.nguoiDung) {
+    try {
+      const tinHieu = await repo.tinHieuXuHuong.theoNguoiDung(
+        thamSo.nguoiDung,
+        GIOI_HAN_TIN_HIEU,
+      );
+      thamKhao = trichThamKhao(tinHieu);
+      for (const th of tinHieu) {
+        mapNguonThamKhao.set(th.id, {
+          tenKenh: th.tenKenh,
+          lienKet: th.lienKet,
+        });
+      }
+    } catch {
+      // Khong doc duoc tin hieu xu huong -> van tiep tuc sinh y tuong tu cac nguon khac
+    }
+  }
 
   // Danh sach trendSignalId hop le — de validate ket qua mo hinh
   const dsTrendSignalId = thamKhao.map((tk) => tk.id);
@@ -444,7 +483,7 @@ export async function deXuatYTuong(
       beMat: b.beMat,
     })),
     // Lop C: cong thuc ke tu kenh ngoai — CHI chu de + kieu hook, KHONG co noi dung goc
-    mauNgoai: thamKhao.map((tk, index) => ({
+    mauNgoai: thamKhao.map((tk) => ({
       soThuTu: tk.id,
       chuDe: tk.chuDe,
       kieuHook: tk.kieuHook,
@@ -491,7 +530,8 @@ export async function deXuatYTuong(
     ketQuaMoHinh.ketQua,
     dsTenTruCot,
     dsTenChanDung,
-    beMat
+    beMat,
+    dsTrendSignalId,
   );
 
   if (yTuongTho.length === 0) {
@@ -525,6 +565,11 @@ export async function deXuatYTuong(
     const pillarId = yt.truCot ? mapTruCot.get(chuanHoaTen(yt.truCot)) ?? null : null;
     const personaId = yt.chanDung ? mapChanDung.get(chuanHoaTen(yt.chanDung)) ?? null : null;
 
+    if (yt.trendSignalId) {
+      dsTrendDaDung.add(yt.trendSignalId);
+      yt.nguonThamKhao = mapNguonThamKhao.get(yt.trendSignalId) ?? null;
+    }
+
     try {
       await repo.yTuong.tao({
         beMat: yt.beMat,
@@ -533,6 +578,7 @@ export async function deXuatYTuong(
         lyDoDeXuat: yt.lyDoDeXuat,
         pillarId,
         personaId,
+        trendSignalId: yt.trendSignalId ?? null,
       });
     } catch {
       // Luu that bai thi bo qua y tuong nay, khong de mat ca lo

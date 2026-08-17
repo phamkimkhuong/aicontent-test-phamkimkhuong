@@ -19,6 +19,8 @@ export type BeMat = 'fanpage' | 'ho_so_ca_nhan' | 'tiktok' | 'zalo';
  * trong workspace trước khi lưu thành `pillarId` / `personaId`.
  */
 
+import type { NguoiDungTuPhien } from '@/lib/data-access/guard';
+
 export type YTuongDeXuat = {
   /** Tiêu đề/ngắn gọn mô tả ý tưởng. */
   tieuDe: string;
@@ -49,6 +51,13 @@ export type YTuongDeXuat = {
    * false -> ý tưởng được neo vào các tuyến/dữ liệu đã có.
    */
   khamPha: boolean;
+  /** ID tin hieu xu huong da tham khao tu mauNgoai (neu co). */
+  trendSignalId?: string | null;
+  /** Thong tin nguon tham khao de UI hien thi lien ket den bai goc. */
+  nguonThamKhao?: {
+    tenKenh?: string | null;
+    lienKet?: string | null;
+  } | null;
 };
 /**
  * Tỷ lệ mục tiêu của một trụ cột nội dung.
@@ -70,6 +79,7 @@ export type ThamSoDeXuat = {
   workspaceId: string;
   beMat: BeMat;
   soLuong: number;
+  nguoiDung?: NguoiDungTuPhien;
 };
 
 
