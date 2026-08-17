@@ -116,12 +116,6 @@ export function donKetQuaDeXuat(
     // Mo hinh co the tra `kham_pha` (snake_case) hoac `khamPha` (camelCase)
     const khamPhaRaw = m.kham_pha ?? m.khamPha;
 
-    // Be mat: uu tien gia tri mo hinh tra ve neu hop le
-    const beMatHopLe: BeMat =
-      typeof m.beMat === 'string' && BE_MAT_HOP_LE.includes(m.beMat as BeMat)
-        ? (m.beMat as BeMat)
-        : beMat;
-
     // trendSignalId: chi chap nhan ID co that trong danh sach mauNgoai
     const trendIdTho = chuoi(m.trendSignalId);
     const trendSignalId =
@@ -134,7 +128,7 @@ export function donKetQuaDeXuat(
       gocTiepCan: chuoi(m.gocTiepCan),
       cauMoDau: chuoi(m.cauMoDau),
       lyDoDeXuat: chuoi(m.lyDoDeXuat),
-      beMat: beMatHopLe,
+      beMat, // Luon ep theo beMat duoc nguoi dung yeu cau trong phien
       khamPha: khamPhaRaw === true || khamPhaRaw === 'true',
       trendSignalId,
     });

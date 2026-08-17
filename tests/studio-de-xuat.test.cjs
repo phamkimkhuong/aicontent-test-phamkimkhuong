@@ -73,7 +73,7 @@ test('donKetQuaDeXuat: doi chieu truCot va chanDung voi danh sach that', () => {
   assert.equal(ket[1].chanDung, null, 'chan dung biet bia phai thanh null');
 });
 
-test('donKetQuaDeXuat: nhan dien dung khamPha va beMat', () => {
+test('donKetQuaDeXuat: nhan dien dung khamPha va ep dung beMat yeu cau', () => {
   const tho = {
     yTuong: [
       { tieuDe: 'Bài 1', kham_pha: true, beMat: 'tiktok' },
@@ -84,13 +84,13 @@ test('donKetQuaDeXuat: nhan dien dung khamPha va beMat', () => {
 
   const ket = donKetQuaDeXuat(tho, [], [], 'fanpage');
   assert.equal(ket[0].khamPha, true);
-  assert.equal(ket[0].beMat, 'tiktok');
+  assert.equal(ket[0].beMat, 'fanpage', 'beMat phai luon ep theo yeu cau cua request');
 
   assert.equal(ket[1].khamPha, false);
-  assert.equal(ket[1].beMat, 'zalo');
+  assert.equal(ket[1].beMat, 'fanpage', 'beMat phai luon ep theo yeu cau cua request');
 
   assert.equal(ket[2].khamPha, true);
-  assert.equal(ket[2].beMat, 'fanpage', 'be mat khong hop le ve mac dinh');
+  assert.equal(ket[2].beMat, 'fanpage', 'beMat phai luon ep theo yeu cau cua request');
 });
 
 test('donKetQuaDeXuat: trendSignalId chi chap nhan id hop le', () => {
