@@ -53,7 +53,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <div className="biz__mark" aria-hidden="true">S5</div>
           <div className="biz__text">
             <div className="biz__eyebrow">Kênh đang quản lý</div>
-            <div className="biz__name">SANG 5M STUDIO</div>
+            <div className="biz__name">Khuong DEMO STUDIO</div>
           </div>
           <button className="icon-btn" type="button" aria-label="Đổi kênh"><Icon name="i-chevron" size={18} /></button>
           <button className="icon-btn" type="button" aria-label="Cài đặt kênh"><Icon name="i-gear" size={18} /></button>
