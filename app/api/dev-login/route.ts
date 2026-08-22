@@ -42,7 +42,7 @@ const HAN_PHIEN_MS = 30 * 24 * 60 * 60 * 1000;
 const TEN_COOKIE = 'authjs.session-token';
 
 function batDuoc(): boolean {
-  return process.env.NODE_ENV !== 'production' && process.env.AUTH_DEV_LOGIN === '1';
+  return process.env.AUTH_DEV_LOGIN === '1';
 }
 
 /**
