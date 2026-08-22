@@ -11,11 +11,30 @@ import { revalidatePath } from 'next/cache';
 import { workspaceHienTai } from '@/lib/auth/current-workspace';
 import { createRepo } from '@/lib/data-access';
 import { sinhBaiViet, type KetQuaSinhBai } from '@/lib/studio/bien-soan';
-import type { BeMat, KetQuaStudio } from '@/lib/studio/kieu';
+import { sinhKichBanVideo } from '@/lib/studio/kich-ban';
+import type { BeMat, KetQuaStudio, KichBanVideo } from '@/lib/studio/kieu';
 
 export type KetQuaLuuBai =
   | { ok: true; contentId: string }
   | { ok: false; loi: string };
+
+/**
+ * Sinh kịch bản video phân cảnh bằng AI (Mốc 3).
+ */
+export async function sinhKichBanAction(thamSo: {
+  beMat?: BeMat;
+  tieuDe: string;
+  gocTiepCan?: string | null;
+  cauMoDau?: string | null;
+  ideaId?: string | null;
+  thoiLuongUocTinhGiay?: number | null;
+}): Promise<KetQuaStudio<KichBanVideo>> {
+  const workspaceId = await workspaceHienTai();
+  return sinhKichBanVideo({
+    workspaceId,
+    ...thamSo,
+  });
+}
 
 /**
  * Sinh noi dung bai viet bang AI.

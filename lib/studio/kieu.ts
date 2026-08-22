@@ -97,3 +97,37 @@ export type KetQuaStudio<T> = {
   loi: string | null;
   canhBao: string[];
 };
+
+/**
+ * Một phân cảnh trong kịch bản quay video (Storyboard).
+ */
+export type PhanCanhVideo = {
+  thoiLuongGiay: number;
+  hinhAnh: string;
+  loiThoai: string;
+};
+
+/**
+ * Kịch bản video hoàn chỉnh theo phân cảnh (Mốc 3).
+ */
+export type KichBanVideo = {
+  tieuDe: string;
+  phanCanh: PhanCanhVideo[];
+  tongThoiLuongGiay: number;
+  soTu: number;
+  viPhamNgonNgu: Array<{
+    cumTu: string;
+    thayBang: string;
+    boiCanh: string;
+  }>;
+};
+
+export type ThamSoSinhKichBan = {
+  workspaceId: string;
+  beMat?: BeMat;
+  tieuDe: string;
+  gocTiepCan?: string | null;
+  cauMoDau?: string | null;
+  ideaId?: string | null;
+  thoiLuongUocTinhGiay?: number | null;
+};
