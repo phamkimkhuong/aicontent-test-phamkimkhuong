@@ -24,7 +24,10 @@ export const config = {
   // `api/dev-login` la cua tat danh rieng cho bai test (xem file do). No phai
   // nam ngoai vong chan, neu khong middleware day no ve /dang-nhap truoc khi no
   // kip tao phien — thanh vong tron khong bao gio dang nhap duoc.
+  //
+  // Landing page `/` cung nam ngoai: khach vang lai va nha tuyen dung can xem
+  // gioi thieu truoc khi quyet dinh dang nhap hay bam "Trai nghiem Demo".
   matcher: [
-    '/((?!api/auth|api/dev-login|healthz|dang-nhap|_next|favicon.ico|robots.txt).*)',
+    '/((?!api/auth|api/dev-login|healthz|dang-nhap|_next|favicon.ico|robots.txt).+)',
   ],
 };
