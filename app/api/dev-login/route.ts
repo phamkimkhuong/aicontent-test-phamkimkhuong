@@ -89,27 +89,48 @@ async function baoDamNguoiDungDev(): Promise<string> {
   });
 }
 
-export async function GET() {
-  if (!batDuoc()) return new NextResponse('Not found', { status: 404 });
+export async function GET(request: Request) {
+  try {
+    if (!batDuoc()) return new NextResponse('Not found', { status: 404 });
 
-  const userId = await baoDamNguoiDungDev();
+    const userId = await baoDamNguoiDungDev();
 
-  const token = randomBytes(32).toString('hex');
-  await db.insert(sessions).values({
-    sessionToken: token,
-    userId,
-    expires: new Date(Date.now() + HAN_PHIEN_MS),
-  });
+    const token = randomBytes(32).toString('hex');
+    await db.insert(sessions).values({
+      sessionToken: token,
+      userId,
+      expires: new Date(Date.now() + HAN_PHIEN_MS),
+    });
 
-  const kho = await cookies();
-  kho.set(TEN_COOKIE, token, {
-    httpOnly: true,
-    sameSite: 'lax',
-    path: '/',
-    // Khong dat `secure`: cua nay chi chay tren http://localhost, bat secure vao
-    // la trinh duyet bo cookie ma khong bao gi.
-    expires: new Date(Date.now() + HAN_PHIEN_MS),
-  });
+    const isHttps =
+      request.headers.get('x-forwarded-proto') === 'https' ||
+      process.env.AUTH_URL?.startsWith('https') ||
+      request.url.startsWith('https');
 
-  return NextResponse.redirect(new URL('/templates', process.env.AUTH_URL ?? 'http://localhost:6980'));
+    const kho = await cookies();
+    // Đặt cả 2 cookie (HTTP và HTTPS) để tương thích 100% với Auth.js v5 trên mọi môi trường
+    kho.set(TEN_COOKIE, token, {
+      httpOnly: true,
+      sameSite: 'lax',
+      path: '/',
+      secure: isHttps,
+      expires: new Date(Date.now() + HAN_PHIEN_MS),
+    });
+
+    if (isHttps) {
+      kho.set(`__Secure-${TEN_COOKIE}`, token, {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        secure: true,
+        expires: new Date(Date.now() + HAN_PHIEN_MS),
+      });
+    }
+
+    const baseUrl = process.env.AUTH_URL || request.url;
+    return NextResponse.redirect(new URL('/templates', baseUrl));
+  } catch (err: any) {
+    console.error('[dev-login error]:', err);
+    return new NextResponse(`Lỗi đăng nhập dev: ${err?.message || err}`, { status: 500 });
+  }
 }
