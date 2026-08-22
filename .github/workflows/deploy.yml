@@ -1,0 +1,61 @@
+name: CI / CD - Auto Deploy to VPS
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  test:
+    name: 🧪 Run Automated Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Checkout Code
+        uses: actions/checkout@v4
+
+      - name: 🟢 Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: 📦 Install Dependencies
+        run: npm ci
+
+      - name: 🔍 Check TypeScript Types
+        run: npx tsc --noEmit
+
+      - name: 🧪 Run Unit Tests
+        run: node --test tests/studio-de-xuat.test.cjs tests/studio-bien-soan.test.cjs tests/data-access-guard.test.cjs
+
+  deploy:
+    name: 🚀 Deploy to VPS
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📡 Connect SSH & Deploy on VPS
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT || 22 }}
+          script: |
+            echo "🚀 Bắt đầu quá trình cập nhật mã nguồn trên VPS..."
+            cd ~/aicontent-test-phamkimkhuong
+            
+            # 1. Kéo code mới nhất từ nhánh main
+            git pull origin main
+            
+            # 2. Cài đặt các package mới (nếu có)
+            npm ci
+            
+            # 3. Tự động áp dụng Migration Database mới
+            npm run db:migrate
+            
+            # 4. Build bản tối ưu hóa cho Production
+            npm run build
+            
+            # 5. Tải lại ứng dụng với Zero Downtime (không gián đoạn người dùng)
+            pm2 reload ecosystem.config.cjs --update-env || pm2 start ecosystem.config.cjs
+            
+            echo "🎉 DEPLOY THÀNH CÔNG LÊN VPS!"
