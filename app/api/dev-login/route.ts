@@ -111,5 +111,5 @@ export async function GET() {
     expires: new Date(Date.now() + HAN_PHIEN_MS),
   });
 
-  return NextResponse.redirect(new URL('/', process.env.AUTH_URL ?? 'http://localhost:6980'));
+  return NextResponse.redirect(new URL('/templates', process.env.AUTH_URL ?? 'http://localhost:6980'));
 }
