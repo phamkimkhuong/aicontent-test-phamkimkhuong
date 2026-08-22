@@ -4,8 +4,8 @@
 .guide-container {
   display: flex;
   flex-direction: column;
-  gap: 28px;
-  max-width: 1000px;
+  gap: 24px;
+  width: 100%;
 }
 
 /* Quick Nav Pill Bar */
@@ -13,16 +13,15 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  overflow-x: auto;
-  padding: 4px 2px 10px;
-  scrollbar-width: thin;
+  flex-wrap: wrap;
+  padding: 2px 0 6px;
 }
 
 .guide-nav__item {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 7px 14px;
+  padding: 6px 14px;
   border-radius: var(--r-pill);
   border: 1px solid var(--line);
   background: var(--surface);
@@ -43,9 +42,15 @@
 /* Workflow Flow 3 Steps */
 .workflow-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 16px;
-  margin-top: 16px;
+  margin-top: 14px;
+}
+
+@media (max-width: 960px) {
+  .workflow-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .workflow-card {
@@ -134,9 +139,15 @@
 /* Feature Details List */
 .feature-list {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 14px;
   margin-top: 6px;
+}
+
+@media (max-width: 800px) {
+  .feature-list {
+    grid-template-columns: 1fr;
+  }
 }
 
 .feature-item {

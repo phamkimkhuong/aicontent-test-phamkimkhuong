@@ -1,0 +1,329 @@
+/* Trang Goi cuoc & Bang gia — AI Content
+   Dong bo 100% token mau cam am, he thong the panel va dark mode tu globals.css. */
+
+.pricing-container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 100%;
+}
+
+/* Current Status Banner */
+.current-plan-card {
+  border: 1px solid var(--brand-200);
+  border-radius: var(--r-xl);
+  background: linear-gradient(145deg, var(--brand-050), var(--surface));
+  padding: 22px 26px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+  box-shadow: var(--shadow-sm);
+}
+
+.current-plan-card__info {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.current-plan-card__badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--btn-from), var(--btn-to));
+  color: var(--btn-ink);
+  font-size: 20px;
+  flex-shrink: 0;
+  box-shadow: var(--shadow-brand);
+}
+
+.current-plan-card__title {
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 3px;
+}
+
+.current-plan-card__sub {
+  font-size: 13px;
+  color: var(--ink-2);
+}
+
+.current-plan-card__stats {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.plan-stat {
+  text-align: right;
+}
+
+.plan-stat__label {
+  font-size: 11.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ink-3);
+}
+
+.plan-stat__val {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+@media (max-width: 640px) {
+  .current-plan-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .current-plan-card__stats {
+    width: 100%;
+    justify-content: space-between;
+    border-top: 1px solid var(--line);
+    padding-top: 14px;
+  }
+  .plan-stat {
+    text-align: left;
+  }
+}
+
+/* Billing Toggle */
+.billing-toggle-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin: 4px 0;
+}
+
+.billing-toggle {
+  display: inline-flex;
+  padding: 4px;
+  border-radius: var(--r-pill);
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+}
+
+.billing-toggle__btn {
+  padding: 8px 20px;
+  border-radius: var(--r-pill);
+  border: 0;
+  background: transparent;
+  color: var(--ink-2);
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.16s var(--ease);
+}
+
+.billing-toggle__btn--active {
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: var(--shadow-sm);
+}
+
+.discount-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 9px;
+  border-radius: var(--r-pill);
+  background: var(--sage-bg);
+  color: var(--sage);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+/* Pricing Grid */
+.pricing-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+  align-items: stretch;
+}
+
+@media (max-width: 980px) {
+  .pricing-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.plan-card {
+  position: relative;
+  border: 1px solid var(--line);
+  border-radius: var(--r-xl);
+  background: var(--surface);
+  padding: 32px 28px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.2s var(--ease), box-shadow 0.2s var(--ease);
+}
+
+.plan-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
+}
+
+.plan-card--featured {
+  border-color: var(--brand-500);
+  background: linear-gradient(180deg, var(--brand-050), var(--surface) 24%);
+  box-shadow: var(--shadow-brand);
+}
+
+.plan-card__badge {
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 4px 14px;
+  border-radius: var(--r-pill);
+  background: linear-gradient(135deg, var(--btn-from), var(--btn-to));
+  color: var(--btn-ink);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  box-shadow: 0 4px 12px rgba(198, 99, 19, .3);
+  white-space: nowrap;
+}
+
+.plan-card__header {
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 22px;
+  margin-bottom: 22px;
+}
+
+.plan-card__name {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 6px;
+}
+
+.plan-card__desc {
+  font-size: 13px;
+  color: var(--ink-2);
+  line-height: 1.5;
+  min-height: 38px;
+}
+
+.plan-card__price-row {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  margin-top: 16px;
+}
+
+.plan-card__price {
+  font-family: var(--font-display);
+  font-size: 34px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--ink);
+  line-height: 1;
+}
+
+.plan-card__period {
+  font-size: 13px;
+  color: var(--ink-3);
+}
+
+/* Features inside Card */
+.plan-features {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1;
+  margin-bottom: 28px;
+}
+
+.plan-feature-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--ink);
+}
+
+.plan-feature-item__icon {
+  color: var(--sage);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.plan-feature-item__icon--dim {
+  color: var(--ink-3);
+  opacity: 0.45;
+}
+
+.plan-feature-item--disabled {
+  color: var(--ink-3);
+}
+
+/* Comparison Table */
+.comparison-section {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.comparison-table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin: 0 -4px;
+}
+
+.comparison-table {
+  width: 100%;
+  min-width: 640px;
+  border-collapse: collapse;
+  font-size: 13.5px;
+  text-align: left;
+}
+
+.comparison-table th,
+.comparison-table td {
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--line);
+}
+
+.comparison-table th {
+  font-family: var(--font-display);
+  font-size: 14.5px;
+  font-weight: 700;
+  color: var(--ink);
+  background: var(--surface-2);
+}
+
+.comparison-table tr:hover td {
+  background: var(--surface-2);
+}
+
+.comparison-table td:not(:first-child),
+.comparison-table th:not(:first-child) {
+  text-align: center;
+}
+
+.check-icon {
+  color: var(--sage);
+  display: inline-block;
+}
+
+.cross-icon {
+  color: var(--ink-3);
+  opacity: 0.4;
+  display: inline-block;
+}

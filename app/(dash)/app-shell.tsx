@@ -85,7 +85,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
           <p className="nav__group">Hệ thống</p>
           <Link className="nav__link" href="/cai-dat/kenh" aria-current={isActive('/cai-dat/kenh') ? 'page' : undefined}><Icon name="i-link" size={18} />Kết nối kênh</Link>
-          <a className="nav__link" href="#"><Icon name="i-card" size={18} />Gói cước</a>
+          <Link className="nav__link" href="/goi-cuoc" aria-current={isActive('/goi-cuoc') ? 'page' : undefined}><Icon name="i-card" size={18} />Gói cước</Link>
           <Link className="nav__link" href="/huong-dan" aria-current={isActive('/huong-dan') ? 'page' : undefined}><Icon name="i-help" size={18} />Hướng dẫn</Link>
         </nav>
 
@@ -150,7 +150,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <div className="notice__title">Gói dùng thử còn 5 ngày</div>
             <p className="notice__sub">Hết hạn thì đề xuất nội dung hằng ngày sẽ tạm dừng, mẫu đã lưu vẫn giữ nguyên.</p>
           </div>
-          <a className="btn btn--primary btn--sm" href="#">Xem các gói</a>
+          <Link className="btn btn--primary btn--sm" href="/goi-cuoc">Xem các gói</Link>
         </div>
 
         <main className="canvas">{children}</main>
