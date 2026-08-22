@@ -89,30 +89,6 @@ async function baoDamNguoiDungDev(): Promise<string> {
   });
 }
 
-function layUrlDich(request: Request, duongDan: string): URL {
-  const authUrl = process.env.AUTH_URL?.trim();
-  if (authUrl) {
-    try {
-      const chuanHoa = authUrl.startsWith('http://') || authUrl.startsWith('https://')
-        ? authUrl
-        : `https://${authUrl}`;
-      return new URL(duongDan, chuanHoa);
-    } catch {
-      // Bỏ qua nếu cấu hình lỗi
-    }
-  }
-
-  const host = request.headers.get('x-forwarded-host') || request.headers.get('host') || '127.0.0.1:6980';
-  const proto =
-    request.headers.get('x-forwarded-proto') ||
-    (host.includes('localhost') || host.includes('127.0.0.1') ? 'http' : 'https');
-  try {
-    return new URL(duongDan, `${proto}://${host}`);
-  } catch {
-    return new URL(duongDan, 'http://127.0.0.1:6980');
-  }
-}
-
 export async function GET(request: Request) {
   try {
     if (!batDuoc()) return new NextResponse('Not found', { status: 404 });
@@ -132,6 +108,7 @@ export async function GET(request: Request) {
       request.url.startsWith('https');
 
     const kho = await cookies();
+    // Đặt cả 2 cookie (HTTP và HTTPS) để tương thích 100% với Auth.js v5 trên mọi môi trường
     kho.set(TEN_COOKIE, token, {
       httpOnly: true,
       sameSite: 'lax',
@@ -150,8 +127,8 @@ export async function GET(request: Request) {
       });
     }
 
-    const redirectUrl = layUrlDich(request, '/templates');
-    return NextResponse.redirect(redirectUrl);
+    const baseUrl = process.env.AUTH_URL || request.url;
+    return NextResponse.redirect(new URL('/templates', baseUrl));
   } catch (err: any) {
     console.error('[dev-login error]:', err);
     return new NextResponse(`Lỗi đăng nhập dev: ${err?.message || err}`, { status: 500 });

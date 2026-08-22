@@ -86,7 +86,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <p className="nav__group">Hệ thống</p>
           <Link className="nav__link" href="/cai-dat/kenh" aria-current={isActive('/cai-dat/kenh') ? 'page' : undefined}><Icon name="i-link" size={18} />Kết nối kênh</Link>
           <a className="nav__link" href="#"><Icon name="i-card" size={18} />Gói cước</a>
-          <a className="nav__link" href="#"><Icon name="i-help" size={18} />Hướng dẫn</a>
+          <Link className="nav__link" href="/huong-dan" aria-current={isActive('/huong-dan') ? 'page' : undefined}><Icon name="i-help" size={18} />Hướng dẫn</Link>
         </nav>
 
         <div className="side-foot">
