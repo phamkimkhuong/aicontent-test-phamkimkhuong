@@ -6,19 +6,29 @@
  * khop" — mat du lieu khong khoi phuc duoc. Xem `scripts/db-rollback.md`.
  */
 
+import fs from 'fs';
+import path from 'path';
 import 'dotenv/config';
 import { defineConfig } from 'drizzle-kit';
 
-const url = process.env.DATABASE_URL;
-if (!url) {
+const rawUrl = process.env.DATABASE_URL;
+if (!rawUrl) {
   throw new Error('Thieu bien moi truong DATABASE_URL');
+}
+
+const laLocal = rawUrl.includes('127.0.0.1') || rawUrl.includes('localhost');
+const certPath = process.env.DATABASE_CA_CERT || path.resolve(process.cwd(), 'certs/aiven-ca.pem');
+
+if (!laLocal && fs.existsSync(certPath)) {
+  process.env.NODE_EXTRA_CA_CERTS = certPath;
+  process.env.PGSSLROOTCERT = certPath;
 }
 
 export default defineConfig({
   dialect: 'postgresql',
   schema: './db/schema/index.ts',
   out: './db/migrations',
-  dbCredentials: { url },
+  dbCredentials: { url: rawUrl },
   casing: 'snake_case',
   verbose: true,
   strict: true,

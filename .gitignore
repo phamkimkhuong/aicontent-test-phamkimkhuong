@@ -19,3 +19,4 @@ proxy_cache_dir/
 
 # Kho anh mac dinh cua ban test nam canh thu muc ma nguon.
 ../aicontent-media/
+certs

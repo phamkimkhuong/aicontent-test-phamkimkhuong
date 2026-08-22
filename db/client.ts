@@ -20,13 +20,32 @@ function docChuoiKetNoi(ten: string): string {
   return giaTri;
 }
 
+import fs from 'fs';
+import path from 'path';
+
+function docCauHinhSSL(chuoiKetNoi: string) {
+  const laLocal = chuoiKetNoi.includes('127.0.0.1') || chuoiKetNoi.includes('localhost');
+  if (laLocal) return { cleanUrl: chuoiKetNoi, ssl: undefined };
+
+  const certPath = process.env.DATABASE_CA_CERT || path.resolve(process.cwd(), 'certs/aiven-ca.pem');
+  if (fs.existsSync(certPath)) {
+    const ca = fs.readFileSync(certPath, 'utf8');
+    const cleanUrl = chuoiKetNoi.replace('?sslmode=require', '').replace('&sslmode=require', '');
+    return { cleanUrl, ssl: { ca, rejectUnauthorized: true } };
+  }
+
+  return { cleanUrl: chuoiKetNoi, ssl: { rejectUnauthorized: false } };
+}
+
 /**
  * Worker nen goi ham nay voi DATABASE_URL_WORKER (vai tro bo qua phan quyen
  * theo hang); tien trinh web tuyet doi khong duoc dung chuoi ket noi do.
  */
 export function taoKetNoi(chuoiKetNoi: string) {
+  const { cleanUrl, ssl } = docCauHinhSSL(chuoiKetNoi);
   const pool = new Pool({
-    connectionString: chuoiKetNoi,
+    connectionString: cleanUrl,
+    ssl,
     max: 10,
     idleTimeoutMillis: 30_000,
     connectionTimeoutMillis: 5_000,

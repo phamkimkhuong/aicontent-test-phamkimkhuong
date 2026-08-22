@@ -12,7 +12,23 @@
  * y — tien trinh web tuyet doi khong duoc cam chuoi cua worker.
  */
 
+const fs = require('fs');
+const path = require('path');
 const { Pool } = require('pg');
+
+function docCauHinhSSL(chuoiKetNoi) {
+  const laLocal = chuoiKetNoi.includes('127.0.0.1') || chuoiKetNoi.includes('localhost');
+  if (laLocal) return { cleanUrl: chuoiKetNoi, ssl: undefined };
+
+  const certPath = process.env.DATABASE_CA_CERT || path.resolve(process.cwd(), 'certs/aiven-ca.pem');
+  if (fs.existsSync(certPath)) {
+    const ca = fs.readFileSync(certPath, 'utf8');
+    const cleanUrl = chuoiKetNoi.replace('?sslmode=require', '').replace('&sslmode=require', '');
+    return { cleanUrl, ssl: { ca, rejectUnauthorized: true } };
+  }
+
+  return { cleanUrl: chuoiKetNoi, ssl: { rejectUnauthorized: false } };
+}
 
 /** @type {Map<string, import('pg').Pool>} */
 const be = new Map();
@@ -29,8 +45,10 @@ function beKetNoi(tenBien = 'DATABASE_URL') {
   // Chet ngay luc mo ket noi con hon chet giua mot truy van sau nay.
   if (!chuoi) throw new Error(`Thieu bien moi truong ${tenBien}`);
 
+  const { cleanUrl, ssl } = docCauHinhSSL(chuoi);
   const moi = new Pool({
-    connectionString: chuoi,
+    connectionString: cleanUrl,
+    ssl,
     max: Number(process.env.QUEUE_POOL_MAX || 6),
     idleTimeoutMillis: 30_000,
     connectionTimeoutMillis: 5_000,

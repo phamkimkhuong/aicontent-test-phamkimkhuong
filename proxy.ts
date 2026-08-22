@@ -2,9 +2,8 @@ import { NextResponse } from 'next/server';
 
 import { auth } from '@/auth';
 
-// Auth.js doc phien tu bang `sessions` qua Drizzle + `pg` — ca hai deu can API
-// cua Node, khong chay duoc trong runtime edge mac dinh cua middleware.
-export const runtime = 'nodejs';
+// Auth.js doc phien tu bang `sessions` qua Drizzle + `pg`.
+// Proxy trong Next.js 16 luon chay tren Node.js runtime.
 
 // Kiem tra phien THAT o day (mot truy van xuong `sessions`) chu khong chi ngo
 // xem cookie co ton tai: chi nhin cookie thi xoa dong `sessions` trong CSDL van
