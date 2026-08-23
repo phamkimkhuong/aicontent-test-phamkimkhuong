@@ -1,11 +1,307 @@
-/* Rieng cot "Kenh" — cac lop bang con lai dung chung voi man "Bai da dang". */
+/* ────────────────────────────────────────────────────────── */
+/* Màn hình Kênh ngoài kia — Competitor & Trend Intelligence */
+/* ────────────────────────────────────────────────────────── */
 
-/* Bang nay gom NHIEU kenh nen ten kenh phai cat mot dong: ten Facebook dai
-   khong duoc phep day cac cot so ra khoi khung nhin. */
-.bang__c-kenh {
-  width: 150px;
-  max-width: 150px;
+/* ─── 1. Summary Intelligence Bar ─── */
+.trend-metrics-bar {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.trend-metric-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  padding: 14px 16px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.trend-metric-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.trend-metric-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--r-md);
+  display: grid;
+  place-items: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.trend-metric-icon--orange { background: var(--brand-050); color: var(--brand-600); }
+.trend-metric-icon--sage   { background: var(--sage-bg); color: var(--sage); }
+.trend-metric-icon--plum   { background: var(--plum-bg); color: var(--plum); }
+.trend-metric-icon--clay   { background: var(--clay-bg); color: var(--clay); }
+
+.trend-metric-val {
+  font-family: var(--font-display);
+  font-size: 19px;
+  font-weight: 800;
+  color: var(--ink);
+  line-height: 1.1;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.trend-metric-label {
+  font-size: 12px;
+  color: var(--ink-3);
+  font-weight: 500;
+  margin-top: 2px;
+}
+
+/* ─── 2. Search & Filter Toolbar ─── */
+.trend-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  padding: 10px 14px;
+}
+
+.trend-search-box {
+  position: relative;
+  flex: 1;
+  min-width: 240px;
+  display: flex;
+  align-items: center;
+}
+
+.trend-search-icon {
+  position: absolute;
+  left: 10px;
+  color: var(--ink-3);
+  pointer-events: none;
+  display: grid;
+  place-items: center;
+}
+
+.trend-search-input {
+  width: 100%;
+  padding: 7px 12px 7px 32px;
+  font-size: 13px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-md);
+  background: var(--surface-2);
+  color: var(--ink);
+  transition: all 0.15s ease;
+}
+
+.trend-search-input:focus {
+  outline: none;
+  border-color: var(--brand-500);
+  background: var(--surface);
+  box-shadow: 0 0 0 3px rgba(198, 99, 19, 0.12);
+}
+
+.trend-filter-pills {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--surface-2);
+  padding: 3px;
+  border-radius: var(--r-md);
+  border: 1px solid var(--line);
+}
+
+.trend-filter-pill {
+  border: 0;
+  background: none;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-2);
+  padding: 5px 12px;
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.trend-filter-pill:hover {
+  color: var(--ink);
+}
+
+.trend-filter-pill--active {
+  background: var(--surface);
+  color: var(--brand-700);
+  box-shadow: var(--shadow-sm);
+}
+
+/* ─── 3. Modern Table Container ─── */
+.trend-table-container {
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.trend-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  text-align: left;
+  min-width: 960px;
+}
+
+.trend-table th {
+  background: var(--surface-2);
+  padding: 10px 14px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink-2);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+}
+
+.trend-table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+}
+
+.trend-table tbody tr {
+  transition: background 0.12s ease;
+}
+
+.trend-table tbody tr:hover {
+  background: var(--surface-2);
+}
+
+.trend-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.trend-col-channel {
+  min-width: 190px;
+  white-space: nowrap;
+}
+
+.trend-channel-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink);
+  text-decoration: none;
+  max-width: 280px;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+.trend-channel-badge:hover {
+  border-color: var(--brand-400);
+  color: var(--brand-700);
+  background: var(--brand-050);
+}
+
+.trend-col-date {
+  width: 100px;
+  white-space: nowrap;
+  font-size: 12.5px;
+  color: var(--ink-2);
+}
+
+.trend-col-format {
+  width: 90px;
+  white-space: nowrap;
+}
+
+.trend-col-content {
+  min-width: 340px;
+}
+
+.trend-text-btn {
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+  color: var(--ink);
+  font-size: 13px;
+  line-height: 1.6;
+  font-family: inherit;
+}
+
+.trend-text-btn--collapsed {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.trend-col-metrics {
+  width: 130px;
+  white-space: nowrap;
+}
+
+.trend-metric-chips {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.trend-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11.5px;
+  color: var(--ink-2);
+}
+
+.trend-chip--viral {
+  color: #dc2626;
+  font-weight: 700;
+  background: #fee2e2;
+  padding: 1px 6px;
+  border-radius: var(--r-sm);
+  display: inline-flex;
+}
+
+.trend-col-actions {
+  width: 110px;
+  white-space: nowrap;
+  text-align: right;
+}
+
+.trend-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--brand-700);
+  background: var(--brand-050);
+  border: 1px solid var(--brand-200);
+  border-radius: var(--r-sm);
+  text-decoration: none;
+  transition: all 0.15s ease;
+}
+
+.trend-action-btn:hover {
+  background: var(--brand-100);
+  color: var(--brand-800);
 }

@@ -1,4 +1,6 @@
-/* Bang bai da dang — moi bai MOT DONG cao hai dong chu, cuon ngang khi nhieu cot. */
+/* ========================================================== */
+/* 1. Bang chung cho Bai da dang & Kenh ngoai kia & Cai dat kenh */
+/* ========================================================== */
 
 .bang__dau {
   display: flex;
@@ -8,8 +10,6 @@
   margin-bottom: 10px;
 }
 
-/* Cuon ngang nam o day chu khong o ca trang: tieu de trang va thanh ben phai
-   dung yen khi nguoi dung keo bang sang phai. */
 .bang-cuon {
   overflow-x: auto;
   border: 1px solid var(--line);
@@ -21,7 +21,6 @@
   width: 100%;
   border-collapse: collapse;
   font-size: 13px;
-  /* Ep bang rong hon khung de cac cot so khong bi bop lai khi noi dung dai. */
   min-width: 1120px;
 }
 
@@ -66,6 +65,7 @@
 
 .bang__c-ngay { width: 92px; white-space: nowrap; }
 .bang__c-dang { width: 62px; white-space: nowrap; }
+.bang__c-kenh { width: 140px; }
 .bang__c-noi-dung { min-width: 320px; }
 .bang__c-so { width: 76px; text-align: right; white-space: nowrap; }
 .bang__c-phu-de { width: 72px; white-space: nowrap; }
@@ -73,7 +73,6 @@
 
 .bang th.bang__c-so { text-align: right; }
 
-/* Noi dung: nut chu de bam mo rong, mac dinh cat dung HAI dong. */
 .bang__chu {
   display: block;
   width: 100%;
@@ -131,4 +130,351 @@
   line-height: 1.6;
   white-space: pre-wrap;
   color: var(--ink-2);
+}
+
+/* ========================================================== */
+/* 2. Modern Styles cho Content Hub Bai da dang                */
+/* ========================================================== */
+
+.post-metrics-bar {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.post-metric-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  padding: 14px 16px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.post-metric-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.post-metric-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--r-md);
+  display: grid;
+  place-items: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.post-metric-icon--orange { background: var(--brand-050); color: var(--brand-600); }
+.post-metric-icon--sage   { background: var(--sage-bg); color: var(--sage); }
+.post-metric-icon--plum   { background: var(--plum-bg); color: var(--plum); }
+.post-metric-icon--clay   { background: var(--clay-bg); color: var(--clay); }
+
+.post-metric-val {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--ink);
+  line-height: 1.1;
+}
+
+.post-metric-label {
+  font-size: 12px;
+  color: var(--ink-3);
+  font-weight: 500;
+  margin-top: 2px;
+}
+
+.post-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  padding: 10px 14px;
+}
+
+.post-search-box {
+  position: relative;
+  flex: 1;
+  min-width: 240px;
+  display: flex;
+  align-items: center;
+}
+
+.post-search-icon {
+  position: absolute;
+  left: 10px;
+  color: var(--ink-3);
+  pointer-events: none;
+  display: grid;
+  place-items: center;
+}
+
+.post-search-input {
+  width: 100%;
+  padding: 7px 12px 7px 32px;
+  font-size: 13px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-md);
+  background: var(--surface-2);
+  color: var(--ink);
+  transition: all 0.15s ease;
+}
+
+.post-search-input:focus {
+  outline: none;
+  border-color: var(--brand-500);
+  background: var(--surface);
+  box-shadow: 0 0 0 3px rgba(198, 99, 19, 0.12);
+}
+
+.post-filter-pills {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--surface-2);
+  padding: 3px;
+  border-radius: var(--r-md);
+  border: 1px solid var(--line);
+}
+
+.post-filter-pill {
+  border: 0;
+  background: none;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-2);
+  padding: 5px 12px;
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.post-filter-pill:hover {
+  color: var(--ink);
+}
+
+.post-filter-pill--active {
+  background: var(--surface);
+  color: var(--brand-700);
+  box-shadow: var(--shadow-sm);
+}
+
+.post-table-container {
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.post-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  text-align: left;
+  min-width: 900px;
+}
+
+.post-table th {
+  background: var(--surface-2);
+  padding: 10px 14px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink-2);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+}
+
+.post-table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+}
+
+.post-table tbody tr {
+  transition: background 0.12s ease;
+}
+
+.post-table tbody tr:hover {
+  background: var(--surface-2);
+}
+
+.post-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.col-date {
+  width: 110px;
+  white-space: nowrap;
+  font-size: 12.5px;
+  color: var(--ink-2);
+  font-weight: 500;
+}
+
+.col-format {
+  width: 90px;
+  white-space: nowrap;
+}
+
+.format-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: var(--r-pill);
+}
+
+.format-badge--text {
+  background: var(--sage-bg);
+  color: var(--sage);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.format-badge--video {
+  background: var(--plum-bg);
+  color: var(--plum);
+  border: 1px solid rgba(139, 92, 246, 0.2);
+}
+
+.col-content {
+  min-width: 380px;
+}
+
+.post-text-btn {
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+  color: var(--ink);
+  font-size: 13px;
+  line-height: 1.6;
+  font-family: inherit;
+}
+
+.post-text-btn--collapsed {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.post-expand-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--brand-600);
+  margin-top: 4px;
+}
+
+.col-metrics {
+  width: 130px;
+  white-space: nowrap;
+}
+
+.post-metric-chips {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.metric-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11.5px;
+  color: var(--ink-2);
+}
+
+.col-actions {
+  width: 100px;
+  white-space: nowrap;
+  text-align: right;
+}
+
+.post-link-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--brand-700);
+  background: var(--brand-050);
+  border: 1px solid var(--brand-200);
+  border-radius: var(--r-sm);
+  text-decoration: none;
+  transition: all 0.15s ease;
+}
+
+.post-link-btn:hover {
+  background: var(--brand-100);
+  color: var(--brand-800);
+}
+
+.post-expanded-box {
+  margin-top: 12px;
+  padding: 12px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  animation: fadeIn 0.15s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-3px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.post-media-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.post-media-thumb {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-sm);
+}
+
+.post-subtitle-box {
+  margin-top: 10px;
+  padding: 10px;
+  background: var(--surface);
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--r-sm);
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--ink-2);
+  white-space: pre-wrap;
+}
+
+.post-empty-state {
+  text-align: center;
+  padding: 48px 20px;
+  color: var(--ink-3);
+  font-size: 13.5px;
 }

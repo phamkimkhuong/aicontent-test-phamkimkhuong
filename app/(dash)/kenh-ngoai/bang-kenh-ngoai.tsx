@@ -1,19 +1,10 @@
 'use client';
 
+import Link from 'next/link';
 import { useMemo, useState } from 'react';
 
 import { Icon } from '../../sprite-icon';
-import { giay, khopChu, khopSo, ngayViet, so, tenDang, TRAN_BAI } from './dinh-dang-va-loc';
-
-/**
- * Bang bai keo ve tu kenh NGUOI KHAC.
- *
- * Dung khuon cua `bai-da-dang/bang-bai-da-dang.tsx`.
- *
- * Bang nay KHONG co anh/video/phu de: `trend_signals` chi luu chu va so lieu,
- * bo boc kenh ngoai khong luu dong asset nao (`lib/keo-bai/keo-kenh-theo-doi.ts`).
- * Bu lai co cot "Kenh" vi mot bang gom bai cua nhieu kenh.
- */
+import { giay, ngayViet, so, tenDang } from './dinh-dang-va-loc';
 
 export type DongKenhNgoai = {
   id: string;
@@ -30,170 +21,365 @@ export type DongKenhNgoai = {
   thoiLuongVideoMs: number | null;
 };
 
-/** Bo loc dang go cho tung cot. Chuoi rong = khong loc. */
-type BoLoc = {
-  ngay: string;
-  kenh: string;
-  dang: string;
-  noiDung: string;
-  kyTu: string;
-  thoiLuong: string;
-  thich: string;
-  binhLuan: string;
-  chiaSe: string;
-};
-
-const LOC_RONG: BoLoc = {
-  ngay: '', kenh: '', dang: '', noiDung: '', kyTu: '',
-  thoiLuong: '', thich: '', binhLuan: '', chiaSe: '',
-};
-
-type Cot = keyof BoLoc;
+type DinhDangLoc = 'tat_ca' | 'video' | 'chu' | 'top_viral';
 
 export function BangKenhNgoai({ dong }: { dong: DongKenhNgoai[] }) {
-  const [loc, datLoc] = useState<BoLoc>(LOC_RONG);
-  const [moRong, datMoRong] = useState<string | null>(null);
+  const [tuKhoa, setTuKhoa] = useState<string>('');
+  const [tabDinhDang, setTabDinhDang] = useState<DinhDangLoc>('tat_ca');
+  const [moRongId, setMoRongId] = useState<string | null>(null);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
 
-  const hien = useMemo(
-    () =>
-      dong.filter(
-        (b) =>
-          khopChu(loc.ngay, ngayViet(b.thoiDiem)) &&
-          khopChu(loc.kenh, b.tenKenh) &&
-          khopChu(loc.dang, tenDang(b.dangBai)) &&
-          khopChu(loc.noiDung, b.noiDung) &&
-          khopSo(loc.kyTu, b.soKyTu) &&
-          khopSo(loc.thoiLuong, b.thoiLuongVideoMs === null ? null : Math.round(b.thoiLuongVideoMs / 1000)) &&
-          khopSo(loc.thich, b.soThich) &&
-          khopSo(loc.binhLuan, b.soBinhLuan) &&
-          khopSo(loc.chiaSe, b.soChiaSe),
-      ),
-    [dong, loc],
-  );
+  // Thống kê nhanh từ dữ liệu
+  const tongSoBai = dong.length;
+  const dsKenhDuyNhat = Array.from(new Set(dong.map((b) => b.tenKenh)));
+  const soKenh = dsKenhDuyNhat.length;
+  const soVideo = dong.filter((b) => b.dangBai === 'kich_ban_quay' || (b.thoiLuongVideoMs ?? 0) > 0).length;
+
+  // Tìm bài có lượt thích cao nhất
+  const baiTopLike = useMemo(() => {
+    if (dong.length === 0) return null;
+    return [...dong].sort((a, b) => (b.soThich ?? 0) - (a.soThich ?? 0))[0];
+  }, [dong]);
+
+  // Lọc dữ liệu
+  const danhSachHienThi = useMemo(() => {
+    return dong.filter((b) => {
+      // Tab định dạng
+      if (tabDinhDang === 'video' && b.dangBai !== 'kich_ban_quay' && (b.thoiLuongVideoMs ?? 0) === 0) {
+        return false;
+      }
+      if (tabDinhDang === 'chu' && (b.dangBai === 'kich_ban_quay' || (b.thoiLuongVideoMs ?? 0) > 0)) {
+        return false;
+      }
+      if (tabDinhDang === 'top_viral' && (b.soThich ?? 0) < 1000) {
+        return false;
+      }
+
+      // Từ khóa tìm kiếm
+      if (tuKhoa.trim()) {
+        const q = tuKhoa.toLowerCase().trim();
+        const khopNoiDung = b.noiDung.toLowerCase().includes(q);
+        const khopKenh = b.tenKenh.toLowerCase().includes(q);
+        const khopNgay = ngayViet(b.thoiDiem).includes(q);
+        if (!khopNoiDung && !khopKenh && !khopNgay) return false;
+      }
+
+      return true;
+    });
+  }, [dong, tabDinhDang, tuKhoa]);
 
   if (dong.length === 0) {
     return (
-      <p className="o__goi-y">
-        Chưa có bài nào từ kênh bạn theo dõi.{' '}
-        <a href="/cai-dat/kenh">Thêm kênh ngoài kia</a> rồi kéo dữ liệu về.
-      </p>
+      <div className="post-empty-state">
+        <Icon name="i-trend" size={40} />
+        <h3 style={{ margin: '12px 0 6px', fontSize: 16, color: 'var(--ink)' }}>
+          Chưa có bài nào từ kênh bạn theo dõi
+        </h3>
+        <p style={{ margin: 0, color: 'var(--ink-2)', fontSize: 13.5 }}>
+          Vào <Link href="/cai-dat/kenh" style={{ color: 'var(--brand-600)', fontWeight: 600 }}>Quản lý kênh theo dõi</Link> để thêm kênh đối thủ và cào dữ liệu về.
+        </p>
+      </div>
     );
   }
 
-  const oLoc = (cot: Cot, goiY: string) => (
-    <input
-      className="bang__loc"
-      type="text"
-      value={loc[cot]}
-      placeholder={goiY}
-      aria-label={`Lọc cột ${cot}`}
-      onChange={(e) => datLoc((cu) => ({ ...cu, [cot]: e.target.value }))}
-    />
-  );
-
-  const coLoc = Object.values(loc).some((v) => v.trim() !== '');
+  function handleCopy(id: string, text: string) {
+    navigator.clipboard.writeText(text);
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(null), 2000);
+  }
 
   return (
-    <>
-      <div className="bang__dau">
-        <p className="ghi-chu-mo-hinh">
-          {hien.length}/{dong.length} bài
-          {coLoc ? ' (đang lọc)' : ''}
-        </p>
-        {coLoc ? (
-          <button className="btn btn--ghost btn--sm" type="button" onClick={() => datLoc(LOC_RONG)}>
-            Bỏ lọc
-          </button>
-        ) : null}
-        <span className="ghi-chu-mo-hinh">
-          Ô lọc số nhận <code>12</code>, <code>&gt;12</code>, <code>&lt;12</code>
-        </span>
-        {/* Cham tran thi phai noi ro: bo loc chi loc trong so bai DA TAI, go
-            mot dieu kien roi khong thay gi de bi hieu la "kho khong co bai do". */}
-        {dong.length >= TRAN_BAI ? (
-          <span className="ghi-chu-mo-hinh">
-            Chỉ tải {TRAN_BAI} bài mới nhất — bộ lọc tìm trong số này
-          </span>
-        ) : null}
+    <div>
+      {/* ─── 1. Thẻ chỉ số Intelligence ─── */}
+      <div className="trend-metrics-bar">
+        <div className="trend-metric-card">
+          <div className="trend-metric-icon trend-metric-icon--orange">
+            <Icon name="i-link" size={20} />
+          </div>
+          <div>
+            <div className="trend-metric-val">{soKenh} kênh</div>
+            <div className="trend-metric-label">Đối thủ &amp; thị trường</div>
+          </div>
+        </div>
+
+        <div className="trend-metric-card">
+          <div className="trend-metric-icon trend-metric-icon--sage">
+            <Icon name="i-folder" size={20} />
+          </div>
+          <div>
+            <div className="trend-metric-val">{tongSoBai} bài</div>
+            <div className="trend-metric-label">Bài viết cào về học hỏi</div>
+          </div>
+        </div>
+
+        <div className="trend-metric-card">
+          <div className="trend-metric-icon trend-metric-icon--plum">
+            <Icon name="i-film" size={20} />
+          </div>
+          <div>
+            <div className="trend-metric-val">{soVideo} video</div>
+            <div className="trend-metric-label">Mẫu kịch bản ngắn</div>
+          </div>
+        </div>
+
+        <div className="trend-metric-card">
+          <div className="trend-metric-icon trend-metric-icon--clay">
+            <Icon name="i-sparkle" size={20} />
+          </div>
+          <div style={{ overflow: 'hidden' }}>
+            <div className="trend-metric-val" style={{ color: '#dc2626' }}>
+              🔥 {baiTopLike ? `${baiTopLike.soThich?.toLocaleString()} Like` : '—'}
+            </div>
+            <div className="trend-metric-label" title={baiTopLike?.tenKenh}>
+              Top tương tác: {baiTopLike?.tenKenh || '—'}
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div className="bang-cuon">
-        <table className="bang">
+      {/* ─── 2. Thanh công cụ tìm kiếm & lọc thông minh ─── */}
+      <div className="trend-toolbar">
+        {/* Ô tìm kiếm */}
+        <div className="trend-search-box">
+          <div className="trend-search-icon">
+            <Icon name="i-search" size={15} />
+          </div>
+          <input
+            type="text"
+            className="trend-search-input"
+            placeholder="Tìm kiếm ý tưởng, từ khóa hoặc tên kênh theo dõi..."
+            value={tuKhoa}
+            onChange={(e) => setTuKhoa(e.target.value)}
+          />
+          {tuKhoa && (
+            <button
+              type="button"
+              onClick={() => setTuKhoa('')}
+              style={{ position: 'absolute', right: 10, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--ink-3)', fontSize: 13 }}
+            >
+              ✕
+            </button>
+          )}
+        </div>
+
+        {/* Tab phân loại */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+          <div className="trend-filter-pills">
+            <button
+              type="button"
+              className={`trend-filter-pill ${tabDinhDang === 'tat_ca' ? 'trend-filter-pill--active' : ''}`}
+              onClick={() => setTabDinhDang('tat_ca')}
+            >
+              Tất cả ({tongSoBai})
+            </button>
+            <button
+              type="button"
+              className={`trend-filter-pill ${tabDinhDang === 'video' ? 'trend-filter-pill--active' : ''}`}
+              onClick={() => setTabDinhDang('video')}
+            >
+              Video ({soVideo})
+            </button>
+            <button
+              type="button"
+              className={`trend-filter-pill ${tabDinhDang === 'chu' ? 'trend-filter-pill--active' : ''}`}
+              onClick={() => setTabDinhDang('chu')}
+            >
+              Bài chữ ({tongSoBai - soVideo})
+            </button>
+            <button
+              type="button"
+              className={`trend-filter-pill ${tabDinhDang === 'top_viral' ? 'trend-filter-pill--active' : ''}`}
+              onClick={() => setTabDinhDang('top_viral')}
+            >
+              🔥 Top Viral (&gt;1K Like)
+            </button>
+          </div>
+
+          <span style={{ fontSize: 12.5, color: 'var(--ink-3)', fontWeight: 500 }}>
+            Hiển thị <strong>{danhSachHienThi.length}</strong> bài
+          </span>
+        </div>
+      </div>
+
+      {/* ─── 3. Bảng dữ liệu hiện đại ─── */}
+      <div className="trend-table-container">
+        <table className="trend-table">
           <thead>
             <tr>
-              <th className="bang__c-ngay">Ngày</th>
-              <th className="bang__c-kenh">Kênh</th>
-              <th className="bang__c-dang">Dạng</th>
-              <th className="bang__c-noi-dung">Nội dung</th>
-              <th className="bang__c-so">Ký tự</th>
-              <th className="bang__c-so">Thời lượng</th>
-              <th className="bang__c-so">Thích</th>
-              <th className="bang__c-so">Bình luận</th>
-              <th className="bang__c-so">Chia sẻ</th>
-              <th className="bang__c-link">Gốc</th>
-            </tr>
-            <tr className="bang__hang-loc">
-              <td>{oLoc('ngay', 'ngày')}</td>
-              <td>{oLoc('kenh', 'tên kênh')}</td>
-              <td>{oLoc('dang', 'chữ/ảnh/video')}</td>
-              <td>{oLoc('noiDung', 'tìm trong bài')}</td>
-              <td>{oLoc('kyTu', '>500')}</td>
-              <td>{oLoc('thoiLuong', 'giây')}</td>
-              <td>{oLoc('thich', '>50')}</td>
-              <td>{oLoc('binhLuan', '>0')}</td>
-              <td>{oLoc('chiaSe', '>0')}</td>
-              <td />
+              <th className="trend-col-date">Ngày</th>
+              <th className="trend-col-channel">Kênh nguồn</th>
+              <th className="trend-col-format">Dạng bài</th>
+              <th className="trend-col-content">Nội dung &amp; Hook tham khảo</th>
+              <th className="trend-col-metrics">Độ dài</th>
+              <th className="trend-col-metrics">Tương tác</th>
+              <th className="trend-col-actions">Thao tác</th>
             </tr>
           </thead>
 
           <tbody>
-            {hien.map((b) => {
-              const mo = moRong === b.id;
+            {danhSachHienThi.map((b) => {
+              const isLong = (b.noiDung ?? '').length > 140;
+              const isExpanded = moRongId === b.id;
+              const isVideo = b.dangBai === 'kich_ban_quay' || (b.thoiLuongVideoMs ?? 0) > 0;
+              const isViral = (b.soThich ?? 0) >= 1000;
+
               return (
-                <tr key={b.id} className={mo ? 'bang__hang--mo' : ''}>
-                  <td className="bang__c-ngay">{ngayViet(b.thoiDiem)}</td>
-                  <td className="bang__c-kenh" title={b.tenKenh}>
-                    <a href={b.urlKenh} target="_blank" rel="noreferrer noopener">
-                      {b.tenKenh}
+                <tr key={b.id}>
+                  {/* Ngày */}
+                  <td className="trend-col-date">
+                    <span style={{ fontWeight: 600, color: 'var(--ink)' }}>{ngayViet(b.thoiDiem)}</span>
+                  </td>
+
+                  {/* Kênh */}
+                  <td className="trend-col-channel">
+                    <a
+                      href={b.urlKenh}
+                      target="_blank"
+                      rel="noreferrer noopener"
+                      className="trend-channel-badge"
+                      title={`Mở kênh ${b.tenKenh}`}
+                    >
+                      <Icon name="i-trend" size={13} />
+                      <span>{b.tenKenh}</span>
                     </a>
                   </td>
-                  <td className="bang__c-dang">{tenDang(b.dangBai)}</td>
-                  <td className="bang__c-noi-dung">
-                    <button
-                      type="button"
-                      className={`bang__chu ${mo ? '' : 'bang__chu--gon'}`}
-                      onClick={() => datMoRong(mo ? null : b.id)}
-                      title={mo ? 'Thu gọn' : 'Mở rộng'}
-                    >
-                      {b.noiDung || '(bài không có chữ)'}
-                    </button>
-                  </td>
-                  <td className="bang__c-so">{b.soKyTu}</td>
-                  <td className="bang__c-so">{giay(b.thoiLuongVideoMs)}</td>
-                  <td className="bang__c-so">{so(b.soThich)}</td>
-                  <td className="bang__c-so">{so(b.soBinhLuan)}</td>
-                  <td className="bang__c-so">{so(b.soChiaSe)}</td>
-                  <td className="bang__c-link">
-                    {b.lienKet ? (
-                      <a href={b.lienKet} target="_blank" rel="noreferrer noopener">
-                        Mở ↗
-                      </a>
+
+                  {/* Dạng bài */}
+                  <td className="trend-col-format">
+                    {isVideo ? (
+                      <span className="format-badge format-badge--video">
+                        <Icon name="i-film" size={12} />
+                        Video
+                      </span>
                     ) : (
-                      '—'
+                      <span className="format-badge format-badge--text">
+                        <Icon name="i-text" size={12} />
+                        {tenDang(b.dangBai)}
+                      </span>
                     )}
+                  </td>
+
+                  {/* Nội dung: Hiển thị tự nhiên, nếu dài mới cho bung ra in-place */}
+                  <td className="trend-col-content">
+                    <div style={{ lineHeight: 1.6, color: 'var(--ink)', fontSize: 13 }}>
+                      <span className={isLong && !isExpanded ? 'trend-text-btn--collapsed' : ''} style={{ display: 'block' }}>
+                        {b.noiDung || <em style={{ color: 'var(--ink-3)' }}>(Bài video/ảnh không có chú thích chữ)</em>}
+                      </span>
+                    </div>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 4 }}>
+                      {isLong && (
+                        <button
+                          type="button"
+                          onClick={() => setMoRongId(isExpanded ? null : b.id)}
+                          style={{
+                            background: 'none',
+                            border: 'none',
+                            padding: 0,
+                            cursor: 'pointer',
+                            fontSize: 11.5,
+                            fontWeight: 600,
+                            color: 'var(--brand-600)',
+                          }}
+                        >
+                          {isExpanded ? '▲ Thu gọn' : '▼ Đọc thêm'}
+                        </button>
+                      )}
+
+                      <button
+                        type="button"
+                        onClick={() => handleCopy(b.id, b.noiDung)}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          padding: 0,
+                          cursor: 'pointer',
+                          fontSize: 11.5,
+                          color: 'var(--ink-3)',
+                        }}
+                        title="Sao chép toàn bộ văn bản bài viết"
+                      >
+                        {copiedId === b.id ? '✓ Đã sao chép' : '📋 Sao chép'}
+                      </button>
+                    </div>
+                  </td>
+
+                  {/* Độ dài */}
+                  <td className="trend-col-metrics">
+                    <div className="trend-metric-chips">
+                      <span className="trend-chip">
+                        📏 <strong>{b.soKyTu}</strong> ký tự
+                      </span>
+                      {b.thoiLuongVideoMs ? (
+                        <span className="trend-chip">
+                          ⏱️ <strong>{giay(b.thoiLuongVideoMs)}</strong>
+                        </span>
+                      ) : null}
+                    </div>
+                  </td>
+
+                  {/* Tương tác */}
+                  <td className="trend-col-metrics">
+                    <div className="trend-metric-chips">
+                      <span className={`trend-chip ${isViral ? 'trend-chip--viral' : ''}`} title="Lượt thích">
+                        ❤️ {so(b.soThich)}
+                      </span>
+                      <span className="trend-chip" title="Bình luận">
+                        💬 {so(b.soBinhLuan)}
+                      </span>
+                      <span className="trend-chip" title="Chia sẻ">
+                        🔄 {so(b.soChiaSe)}
+                      </span>
+                    </div>
+                  </td>
+
+                  {/* Thao tác */}
+                  <td className="trend-col-actions">
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'flex-end' }}>
+                      {b.lienKet ? (
+                        <a
+                          href={b.lienKet}
+                          target="_blank"
+                          rel="noreferrer noopener"
+                          className="trend-action-btn"
+                        >
+                          Mở bài ↗
+                        </a>
+                      ) : (
+                        <span style={{ color: 'var(--ink-3)', fontSize: 12 }}>—</span>
+                      )}
+
+                      <Link
+                        href={`/studio/de-xuat?trendSignalId=${b.id}&tenKenh=${encodeURIComponent(b.tenKenh)}&hook=${encodeURIComponent(b.noiDung.slice(0, 140))}&dang=${b.dangBai ?? (b.thoiLuongVideoMs ? 'kich_ban_quay' : 'chu')}`}
+                        className="trend-action-btn"
+                        style={{ background: 'var(--surface-2)', borderColor: 'var(--line)', color: 'var(--ink-2)', fontSize: 11 }}
+                        title="Đến Studio để AI lấy cảm hứng từ chủ đề này đề xuất ý tưởng cho bạn"
+                      >
+                        ⚡ Học cách kể
+                      </Link>
+                    </div>
                   </td>
                 </tr>
               );
             })}
           </tbody>
         </table>
-      </div>
 
-      {hien.length === 0 ? (
-        <p className="o__goi-y">
-          Không bài nào khớp bộ lọc. <Icon name="i-search" size={14} />
-        </p>
-      ) : null}
-    </>
+        {danhSachHienThi.length === 0 && (
+          <div className="post-empty-state">
+            <Icon name="i-search" size={32} />
+            <p style={{ margin: '8px 0 0' }}>Không tìm thấy bài viết nào khớp với &ldquo;{tuKhoa}&rdquo;.</p>
+            <button
+              type="button"
+              className="btn btn--sm btn--ghost"
+              onClick={() => { setTuKhoa(''); setTabDinhDang('tat_ca'); }}
+              style={{ marginTop: 10 }}
+            >
+              Xóa bộ lọc
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
   );
 }

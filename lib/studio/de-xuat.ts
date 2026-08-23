@@ -465,6 +465,13 @@ export async function deXuatYTuong(
           lienKet: th.lienKet,
         });
       }
+      if (thamSo.trendSignalId) {
+        const idx = thamKhao.findIndex((tk) => tk.id === thamSo.trendSignalId);
+        if (idx > 0) {
+          const [mucDau] = thamKhao.splice(idx, 1);
+          thamKhao.unshift(mucDau);
+        }
+      }
     } catch {
       // Khong doc duoc tin hieu xu huong -> van tiep tuc sinh y tuong tu cac nguon khac
     }

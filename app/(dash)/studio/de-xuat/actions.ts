@@ -23,6 +23,7 @@ import type { BeMat, KetQuaStudio, YTuongDeXuat } from '@/lib/studio/kieu';
 export async function sinhDeXuatAction(
   beMat: BeMat,
   soLuong = 5,
+  trendSignalId?: string,
 ): Promise<KetQuaStudio<YTuongDeXuat[]>> {
   const workspaceId = await workspaceHienTai();
 
@@ -40,6 +41,7 @@ export async function sinhDeXuatAction(
     beMat,
     soLuong: Math.max(1, Math.min(20, soLuong)),
     nguoiDung,
+    trendSignalId,
   });
 
   // Revalidate de man hinh cap nhat danh sach y tuong da luu

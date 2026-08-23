@@ -80,6 +80,7 @@ export type ThamSoDeXuat = {
   beMat: BeMat;
   soLuong: number;
   nguoiDung?: NguoiDungTuPhien;
+  trendSignalId?: string;
 };
 
 

@@ -15,7 +15,24 @@ export const metadata: Metadata = {
   title: 'Đề xuất hôm nay — AI Content',
 };
 
-export default async function TrangDeXuat() {
+export default async function TrangDeXuat(props: {
+  searchParams: Promise<{
+    trendSignalId?: string;
+    tenKenh?: string;
+    hook?: string;
+    dang?: string;
+  }>;
+}) {
+  const searchParams = await props.searchParams;
+  const trendContext = searchParams.trendSignalId
+    ? {
+        id: searchParams.trendSignalId,
+        tenKenh: searchParams.tenKenh ?? null,
+        hook: searchParams.hook ?? null,
+        dang: searchParams.dang ?? null,
+      }
+    : null;
+
   const workspaceId = await workspaceHienTai();
   const repo = createRepo(workspaceId);
 
@@ -61,6 +78,7 @@ export default async function TrangDeXuat() {
         dsTruCot={dsTenTruCot}
         dsChanDung={dsTenChanDung}
         yTuongDaLuu={yTuongDaLuu}
+        trendContext={trendContext}
       />
     </>
   );

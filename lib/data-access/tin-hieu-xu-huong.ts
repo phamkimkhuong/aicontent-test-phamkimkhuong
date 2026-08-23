@@ -128,6 +128,7 @@ export function tinHieuXuHuongRepo(db: KetNoiDrizzle, workspaceId: string) {
           soBinhLuan: trendSignals.soBinhLuan,
           soChiaSe: trendSignals.soChiaSe,
           thoiLuongVideoMs: trendSignals.thoiLuongVideoMs,
+          congThuc: trendSignals.congThuc,
           tenKenh: kenhTheoDoi.tenHienThi,
           urlKenh: kenhTheoDoi.urlKenh,
         })

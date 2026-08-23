@@ -19,10 +19,18 @@ type YTuongDaLuu = {
   ngayTao: string;
 };
 
+type TrendContext = {
+  id: string;
+  tenKenh: string | null;
+  hook: string | null;
+  dang: string | null;
+};
+
 type Props = {
   dsTruCot: string[];
   dsChanDung: string[];
   yTuongDaLuu: YTuongDaLuu[];
+  trendContext?: TrendContext | null;
 };
 
 const DANH_SACH_BE_MAT: {
@@ -62,8 +70,11 @@ const DANH_SACH_BE_MAT: {
   },
 ];
 
-export function ManDeXuat({ dsTruCot, dsChanDung, yTuongDaLuu }: Props) {
-  const [beMat, setBeMat] = useState<BeMat>('fanpage');
+export function ManDeXuat({ dsTruCot, dsChanDung, yTuongDaLuu, trendContext }: Props) {
+  const [trendNguon, setTrendNguon] = useState<TrendContext | null>(trendContext ?? null);
+  const [beMat, setBeMat] = useState<BeMat>(
+    trendContext?.dang === 'kich_ban_quay' ? 'tiktok' : 'fanpage',
+  );
   const [soLuong, setSoLuong] = useState<number>(5);
   const [danhSachYTuong, setDanhSachYTuong] = useState<YTuongDeXuat[]>([]);
   const [canhBao, setCanhBao] = useState<string[]>([]);
@@ -76,7 +87,11 @@ export function ManDeXuat({ dsTruCot, dsChanDung, yTuongDaLuu }: Props) {
 
   const CAC_BUOC_SINH = [
     { stt: 1, ten: 'Đọc Brand DNA & Chân dung', moTa: `Đối chiếu ${dsTruCot.length} trụ cột và ${dsChanDung.length} chân dung khách hàng` },
-    { stt: 2, ten: 'Phân tích Trend & Quota 80/20', moTa: 'Tính toán tỷ lệ trụ cột và tín hiệu thị trường' },
+    {
+      stt: 2,
+      ten: trendNguon ? `Học công thức từ ${trendNguon.tenKenh || 'Kênh ngoài'}` : 'Phân tích Trend & Quota 80/20',
+      moTa: trendNguon ? `Trích xuất Hook và cấu trúc kể chuyện của bài mẫu tham khảo` : 'Tính toán tỷ lệ trụ cột và tín hiệu thị trường',
+    },
     { stt: 3, ten: 'AI sáng tạo ý tưởng', moTa: `Mô hình đang sinh ${soLuong} ý tưởng chuẩn ${DANH_SACH_BE_MAT.find(b => b.id === beMat)?.ten || beMat}` },
     { stt: 4, ten: 'Rải Quota & Khám phá 20%', moTa: 'Áp dụng thuật toán Largest Remainder cân bằng chiến lược' },
   ];
@@ -94,7 +109,7 @@ export function ManDeXuat({ dsTruCot, dsChanDung, yTuongDaLuu }: Props) {
 
     startSinhTransition(async () => {
       try {
-        const res = await sinhDeXuatAction(beMat, soLuong);
+        const res = await sinhDeXuatAction(beMat, soLuong, trendNguon?.id);
         clearTimeout(t1);
         clearTimeout(t2);
         clearTimeout(t3);
@@ -107,7 +122,7 @@ export function ManDeXuat({ dsTruCot, dsChanDung, yTuongDaLuu }: Props) {
           setDanhSachYTuong(res.ketQua);
           if (res.canhBao.length) setCanhBao(res.canhBao);
         }
-      } catch (err) {
+      } catch {
         clearTimeout(t1);
         clearTimeout(t2);
         clearTimeout(t3);
@@ -118,6 +133,37 @@ export function ManDeXuat({ dsTruCot, dsChanDung, yTuongDaLuu }: Props) {
 
   return (
     <div className="studio-container">
+      {/* Banner Chế độ Học cách kể nếu được kích hoạt từ Kênh ngoài */}
+      {trendNguon && (
+        <div className="trend-context-banner">
+          <div className="trend-context-banner__content">
+            <div className="trend-context-banner__tag">
+              <Icon name="i-trend" size={14} />
+              Chế độ đặc biệt: Học cách kể từ Xu hướng đối thủ
+            </div>
+            <h3 className="trend-context-banner__title">
+              📡 Đang lấy cảm hứng từ kênh: <strong style={{ color: 'var(--brand-700)' }}>{trendNguon.tenKenh || 'Kênh ngoài'}</strong>
+            </h3>
+            {trendNguon.hook && (
+              <div className="trend-context-banner__quote">
+                &ldquo;{trendNguon.hook}&rdquo;
+              </div>
+            )}
+            <p style={{ margin: '4px 0 0', fontSize: 12, color: 'var(--ink-3)' }}>
+              AI sẽ phân tích cấu trúc, câu mở đầu và cách giữ chân người xem của bài này, sau đó kết hợp với Chân dung khách hàng &amp; Trụ cột của bạn để sinh ý tưởng mới.
+            </p>
+          </div>
+          <button
+            type="button"
+            className="trend-context-banner__close"
+            onClick={() => setTrendNguon(null)}
+            title="Thoát chế độ học cách kể để về đề xuất tự động"
+          >
+            ✕ Bỏ chọn bài mẫu
+          </button>
+        </div>
+      )}
+
       {/* 1. Bảng điều khiển bộ sinh ý tưởng */}
       <div className="panel" style={{ marginBottom: 24 }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
@@ -199,7 +245,11 @@ export function ManDeXuat({ dsTruCot, dsChanDung, yTuongDaLuu }: Props) {
                 }}
               >
                 <Icon name="i-sparkle" size={16} />
-                {dangSinh ? `Đang sáng tạo ${soLuong} ý tưởng (${tienDoPhanTram}%)...` : 'Sinh đề xuất hôm nay'}
+                {dangSinh
+                  ? `Đang sáng tạo ${soLuong} ý tưởng (${tienDoPhanTram}%)...`
+                  : trendNguon
+                  ? '⚡ Sinh ý tưởng học từ bài mẫu này'
+                  : 'Sinh đề xuất hôm nay'}
               </button>
             </div>
           </div>

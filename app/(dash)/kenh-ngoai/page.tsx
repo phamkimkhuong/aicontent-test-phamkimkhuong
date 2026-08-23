@@ -53,6 +53,7 @@ export default async function TrangKenhNgoai() {
     soBinhLuan: b.soBinhLuan,
     soChiaSe: b.soChiaSe,
     thoiLuongVideoMs: b.thoiLuongVideoMs,
+    congThuc: b.congThuc as { kieuHook?: string | null; chuDe?: string[] } | null,
   }));
 
   return (
