@@ -45,7 +45,7 @@ export default async function TrangDangNhap({
         <form
           action={async () => {
             'use server';
-            await signIn('google', { redirectTo: '/templates' });
+            await signIn('google', { redirectTo: '/studio/de-xuat' });
           }}
         >
           <button className="dn-nut" type="submit">

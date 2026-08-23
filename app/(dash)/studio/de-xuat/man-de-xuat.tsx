@@ -70,18 +70,48 @@ export function ManDeXuat({ dsTruCot, dsChanDung, yTuongDaLuu }: Props) {
   const [loi, setLoi] = useState<string | null>(null);
   const [dangSinh, startSinhTransition] = useTransition();
 
+  // Trạng thái tiến trình chạy nhiều bước sống động
+  const [buocHienTai, setBuocHienTai] = useState<number>(0);
+  const [tienDoPhanTram, setTienDoPhanTram] = useState<number>(15);
+
+  const CAC_BUOC_SINH = [
+    { stt: 1, ten: 'Đọc Brand DNA & Chân dung', moTa: `Đối chiếu ${dsTruCot.length} trụ cột và ${dsChanDung.length} chân dung khách hàng` },
+    { stt: 2, ten: 'Phân tích Trend & Quota 80/20', moTa: 'Tính toán tỷ lệ trụ cột và tín hiệu thị trường' },
+    { stt: 3, ten: 'AI sáng tạo ý tưởng', moTa: `Mô hình đang sinh ${soLuong} ý tưởng chuẩn ${DANH_SACH_BE_MAT.find(b => b.id === beMat)?.ten || beMat}` },
+    { stt: 4, ten: 'Rải Quota & Khám phá 20%', moTa: 'Áp dụng thuật toán Largest Remainder cân bằng chiến lược' },
+  ];
+
   function handleSinhDeXuat() {
     setLoi(null);
     setCanhBao([]);
+    setBuocHienTai(0);
+    setTienDoPhanTram(20);
+
+    // Chuỗi timer mô phỏng tiến trình phân tích nhiều giai đoạn
+    const t1 = setTimeout(() => { setBuocHienTai(1); setTienDoPhanTram(45); }, 700);
+    const t2 = setTimeout(() => { setBuocHienTai(2); setTienDoPhanTram(75); }, 1600);
+    const t3 = setTimeout(() => { setBuocHienTai(3); setTienDoPhanTram(92); }, 2500);
 
     startSinhTransition(async () => {
-      const res = await sinhDeXuatAction(beMat, soLuong);
-      if (res.trangThai === 'loi' || !res.ketQua) {
-        setLoi(res.loi ?? 'Không thể sinh ý tưởng lúc này.');
-        if (res.canhBao.length) setCanhBao(res.canhBao);
-      } else {
-        setDanhSachYTuong(res.ketQua);
-        if (res.canhBao.length) setCanhBao(res.canhBao);
+      try {
+        const res = await sinhDeXuatAction(beMat, soLuong);
+        clearTimeout(t1);
+        clearTimeout(t2);
+        clearTimeout(t3);
+        setTienDoPhanTram(100);
+
+        if (res.trangThai === 'loi' || !res.ketQua) {
+          setLoi(res.loi ?? 'Không thể sinh ý tưởng lúc này.');
+          if (res.canhBao.length) setCanhBao(res.canhBao);
+        } else {
+          setDanhSachYTuong(res.ketQua);
+          if (res.canhBao.length) setCanhBao(res.canhBao);
+        }
+      } catch (err) {
+        clearTimeout(t1);
+        clearTimeout(t2);
+        clearTimeout(t3);
+        setLoi('Lỗi kết nối khi gọi mô hình đề xuất.');
       }
     });
   }
@@ -165,10 +195,11 @@ export function ManDeXuat({ dsTruCot, dsChanDung, yTuongDaLuu }: Props) {
                   display: 'inline-flex',
                   alignItems: 'center',
                   gap: 8,
+                  boxShadow: dangSinh ? 'none' : 'var(--shadow-brand)',
                 }}
               >
                 <Icon name="i-sparkle" size={16} />
-                {dangSinh ? 'Đang suy nghĩ đề xuất...' : 'Sinh đề xuất hôm nay'}
+                {dangSinh ? `Đang sáng tạo ${soLuong} ý tưởng (${tienDoPhanTram}%)...` : 'Sinh đề xuất hôm nay'}
               </button>
             </div>
           </div>
@@ -212,16 +243,77 @@ export function ManDeXuat({ dsTruCot, dsChanDung, yTuongDaLuu }: Props) {
         </div>
       ))}
 
-      {/* Trạng thái đang tải */}
+      {/* Trạng thái đang tải cao cấp (Rich Loading Animation & Skeleton) */}
       {dangSinh && (
-        <div className="panel" style={{ textAlign: 'center', padding: '48px 20px', marginBottom: 24 }}>
-          <div style={{ display: 'inline-block', marginBottom: 12, color: 'var(--brand-500)' }}>
-            <Icon name="i-sparkle" size={36} />
+        <div className="idea-loading-wrapper">
+          {/* Header tiến trình */}
+          <div className="idea-loading-header">
+            <div className="idea-loading-status">
+              <div className="idea-loading-spinner" />
+              <div>
+                <h3 style={{ margin: '0 0 4px', fontSize: 16, fontWeight: 700, color: 'var(--ink)' }}>
+                  {CAC_BUOC_SINH[buocHienTai]?.ten || 'Đang chuẩn bị dữ liệu...'}
+                </h3>
+                <p style={{ margin: 0, color: 'var(--ink-2)', fontSize: 13 }}>
+                  {CAC_BUOC_SINH[buocHienTai]?.moTa}
+                </p>
+              </div>
+            </div>
+
+            <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--brand-600)' }}>
+              {tienDoPhanTram}%
+            </span>
           </div>
-          <h3 style={{ margin: '0 0 8px', fontSize: 17 }}>Đang phân tích dữ liệu và sinh ý tưởng...</h3>
-          <p style={{ margin: 0, color: 'var(--ink-2)', fontSize: 13.5 }}>
-            Đang đối chiếu {dsTruCot.length} trụ cột, {dsChanDung.length} chân dung và bài tham khảo từ kênh theo dõi.
-          </p>
+
+          {/* Thanh tiến trình phát sáng */}
+          <div className="loading-progress-bar-container">
+            <div
+              className="loading-progress-bar-fill"
+              style={{ width: `${tienDoPhanTram}%` }}
+            />
+          </div>
+
+          {/* 4 Nút bước tiến trình */}
+          <div className="loading-step-timeline">
+            {CAC_BUOC_SINH.map((b, idx) => {
+              const isDone = buocHienTai > idx;
+              const isActive = buocHienTai === idx;
+              return (
+                <div
+                  key={b.stt}
+                  className={`loading-step-node ${isDone ? 'loading-step-node--done' : ''} ${isActive ? 'loading-step-node--active' : ''}`}
+                >
+                  <div className="loading-step-badge">
+                    {isDone ? '✓' : b.stt}
+                  </div>
+                  <span>{b.ten}</span>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Mô phỏng khung thẻ bài đang hình thành (Shimmer Skeletons) */}
+          <div style={{ marginTop: 8 }}>
+            <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--ink-3)', marginBottom: 10 }}>
+              Đang dựng cấu trúc {soLuong} thẻ ý tưởng...
+            </div>
+            <div className="skeleton-grid">
+              {Array.from({ length: Math.min(3, soLuong) }).map((_, idx) => (
+                <div key={idx} className="skeleton-card">
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div className="skeleton-shimmer" style={{ width: 80, height: 20 }} />
+                    <div className="skeleton-shimmer" style={{ width: 100, height: 16 }} />
+                  </div>
+                  <div className="skeleton-shimmer" style={{ width: '90%', height: 18, margin: '6px 0' }} />
+                  <div className="skeleton-shimmer" style={{ width: '100%', height: 44 }} />
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 4 }}>
+                    <div className="skeleton-shimmer" style={{ width: 70, height: 28 }} />
+                    <div className="skeleton-shimmer" style={{ width: 90, height: 28 }} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       )}
 

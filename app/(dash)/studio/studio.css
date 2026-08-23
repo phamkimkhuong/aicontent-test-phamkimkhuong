@@ -1176,5 +1176,161 @@
   min-height: 140px;
 }
 
+/* ────────────────────────────────────────────────────────── */
+/* Rich Loading & Waiting UX (Studio De Xuat)                 */
+/* ────────────────────────────────────────────────────────── */
+
+.idea-loading-wrapper {
+  border: 1px solid var(--brand-200);
+  border-radius: var(--r-xl);
+  background: linear-gradient(180deg, var(--surface), var(--canvas-from));
+  padding: 28px 24px;
+  box-shadow: var(--shadow-md);
+  margin-bottom: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.idea-loading-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.idea-loading-status {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.idea-loading-spinner {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 3px solid var(--brand-100);
+  border-top-color: var(--brand-500);
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loading-progress-bar-container {
+  width: 100%;
+  height: 6px;
+  background: var(--brand-100);
+  border-radius: var(--r-pill);
+  overflow: hidden;
+  position: relative;
+}
+
+.loading-progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--brand-500), #f97316);
+  border-radius: var(--r-pill);
+  transition: width 0.3s ease-out;
+  box-shadow: 0 0 10px rgba(249, 115, 22, 0.5);
+}
+
+.loading-step-timeline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 6px 0;
+}
+
+@media (max-width: 768px) {
+  .loading-step-timeline {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+}
+
+.loading-step-node {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--ink-3);
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.loading-step-node--done {
+  color: #059669;
+  font-weight: 600;
+}
+
+.loading-step-node--active {
+  color: var(--brand-700);
+  font-weight: 700;
+  transform: scale(1.02);
+}
+
+.loading-step-badge {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 11px;
+  font-weight: 700;
+  background: var(--surface-2);
+  color: var(--ink-3);
+}
+
+.loading-step-node--done .loading-step-badge {
+  background: #10b981;
+  color: #fff;
+}
+
+.loading-step-node--active .loading-step-badge {
+  background: var(--brand-500);
+  color: #fff;
+  animation: pulse-badge 1.2s infinite alternate;
+}
+
+@keyframes pulse-badge {
+  from { transform: scale(1); box-shadow: 0 0 0 0 rgba(198, 99, 19, 0.4); }
+  to { transform: scale(1.15); box-shadow: 0 0 0 6px rgba(198, 99, 19, 0); }
+}
+
+/* Skeleton Card Simulation */
+.skeleton-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+  margin-top: 8px;
+}
+
+.skeleton-card {
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(90deg, var(--surface-2) 25%, var(--brand-050) 50%, var(--surface-2) 75%);
+  background-size: 200% 100%;
+  animation: shimmer-anim 1.5s infinite;
+  border-radius: var(--r-sm);
+}
+
+@keyframes shimmer-anim {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+
 
 

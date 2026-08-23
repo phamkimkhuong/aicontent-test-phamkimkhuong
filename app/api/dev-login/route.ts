@@ -128,7 +128,7 @@ export async function GET(request: Request) {
     }
 
     const baseUrl = process.env.AUTH_URL || request.url;
-    return NextResponse.redirect(new URL('/templates', baseUrl));
+    return NextResponse.redirect(new URL('/studio/de-xuat', baseUrl));
   } catch (err: any) {
     console.error('[dev-login error]:', err);
     return new NextResponse(`Lỗi đăng nhập dev: ${err?.message || err}`, { status: 500 });
