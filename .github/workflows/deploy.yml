@@ -32,6 +32,14 @@ jobs:
           GEMINI_API_KEY: mock_key
         run: node --test tests/studio-de-xuat.test.cjs tests/studio-bien-soan.test.cjs tests/data-access-guard.test.cjs
 
+      - name: 🏗️ Test Production Build
+        env:
+          DATABASE_URL: postgresql://mock:mock@127.0.0.1:5432/mock
+          DATABASE_URL_WORKER: postgresql://mock:mock@127.0.0.1:5432/mock
+          AUTH_SECRET: f2db02d127f8c5535a22768cb82678eca21e48784932728632f52be7f99c5707
+          GEMINI_API_KEY: mock_key
+        run: npm run build
+
   deploy:
     name: 🚀 Deploy to VPS
     needs: test
@@ -45,6 +53,7 @@ jobs:
           key: ${{ secrets.VPS_SSH_KEY }}
           port: ${{ secrets.VPS_PORT || 22 }}
           script: |
+            set -e
             echo "🚀 Bắt đầu quá trình cập nhật mã nguồn trên VPS..."
             cd ~/aicontent-test-phamkimkhuong
             
