@@ -1,7 +1,5 @@
 'use client';
 
-import { useState } from 'react';
-
 type Props = {
   isOpen: boolean;
   onClose: () => void;
@@ -9,19 +7,7 @@ type Props = {
 };
 
 export function AuthModal({ isOpen, onClose, onLoginGoogle }: Props) {
-  const [dangXuLy, setDangXuLy] = useState(false);
-
   if (!isOpen) return null;
-
-  async function handleGoogleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setDangXuLy(true);
-    try {
-      await onLoginGoogle();
-    } catch {
-      setDangXuLy(false);
-    }
-  }
 
   return (
     <div
@@ -52,11 +38,10 @@ export function AuthModal({ isOpen, onClose, onLoginGoogle }: Props) {
         </div>
 
         {/* Form dang nhap Google */}
-        <form onSubmit={handleGoogleSubmit} style={{ width: '100%' }}>
+        <form action={onLoginGoogle} style={{ width: '100%' }}>
           <button
             type="submit"
             className="auth-modal-google-btn"
-            disabled={dangXuLy}
           >
             <svg width="20" height="20" viewBox="0 0 48 48" aria-hidden="true">
               <path
@@ -76,7 +61,7 @@ export function AuthModal({ isOpen, onClose, onLoginGoogle }: Props) {
                 d="M24 10.1c4.1 0 6.9 1.8 8.5 3.3l6.2-6C34.9 3.9 29.9 2 24 2 15.4 2 7.9 7.1 4.5 14.1l7 5.5C13.3 14.3 18.2 10.1 24 10.1"
               />
             </svg>
-            <span>{dangXuLy ? 'Đang kết nối với Google...' : 'Tiếp tục với Google'}</span>
+            <span>Tiếp tục với Google</span>
           </button>
         </form>
 

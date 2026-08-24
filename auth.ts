@@ -141,16 +141,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
      * JavaScript doc duoc thi httpOnly con lai vo nghia.
      */
     async session({ session, user }) {
-      const thuoc = await db
-        .select({ workspaceId: workspaceMembers.workspaceId })
-        .from(workspaceMembers)
-        .where(eq(workspaceMembers.userId, user.id))
-        .limit(1);
+      let workspaceId: string | null = null;
+      if (user?.id) {
+        workspaceId = await baoDamCoKhongGianLamViec(user.id, user.name, user.email);
+      }
 
       return {
         user: { id: user.id, name: user.name, email: user.email, image: user.image },
         expires: session.expires.toISOString(),
-        workspaceId: thuoc[0]?.workspaceId ?? null,
+        workspaceId,
       };
     },
   },
