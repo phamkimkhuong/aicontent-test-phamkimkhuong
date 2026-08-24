@@ -4,16 +4,49 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Icon } from '../sprite-icon';
+import { dangXuatAction } from './dang-xuat-action';
 import './app-shell.css';
 
 type Theme = 'light' | 'dark';
 
-export function AppShell({ children }: { children: React.ReactNode }) {
+type UserInfo = {
+  name: string;
+  email: string;
+  image?: string | null;
+};
+
+type AppShellProps = {
+  children: React.ReactNode;
+  user?: UserInfo;
+  soDuCredit?: number;
+  tongCredit?: number;
+  tenWorkspace?: string;
+};
+
+export function AppShell({
+  children,
+  user,
+  soDuCredit = 1500,
+  tongCredit = 1500,
+  tenWorkspace = 'Khuong DEMO STUDIO',
+}: AppShellProps) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const pathname = usePathname();
   // Khởi tạo 'light' cho khớp HTML server dựng ra; giá trị thật do script trong
   // <head> đặt lên <html data-theme> trước khi hydrate, đọc lại ở effect dưới.
   const [theme, setTheme] = useState<Theme>('light');
+
+  const avatarLetters = user?.name
+    ? user.name
+        .split(' ')
+        .map((p) => p[0])
+        .filter(Boolean)
+        .slice(0, 2)
+        .join('')
+        .toUpperCase()
+    : 'AI';
+
+  const phanTramCredit = Math.min(100, Math.max(0, Math.round((soDuCredit / tongCredit) * 100)));
 
   function isActive(href: string) {
     if (!pathname || href === '#' || href === '') return false;
@@ -46,14 +79,18 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     }
   }
 
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+
   return (
     <div className="app" data-drawer={drawerOpen ? 'open' : 'closed'}>
       <aside className="sidebar" id="sidebar">
         <div className="biz">
-          <div className="biz__mark" aria-hidden="true">S5</div>
+          <div className="biz__mark" aria-hidden="true">
+            {tenWorkspace.slice(0, 2).toUpperCase()}
+          </div>
           <div className="biz__text">
             <div className="biz__eyebrow">Kênh đang quản lý</div>
-            <div className="biz__name">Khuong DEMO STUDIO</div>
+            <div className="biz__name">{tenWorkspace}</div>
           </div>
           <button className="icon-btn" type="button" aria-label="Đổi kênh"><Icon name="i-chevron" size={18} /></button>
           <button className="icon-btn" type="button" aria-label="Cài đặt kênh"><Icon name="i-gear" size={18} /></button>
@@ -89,25 +126,72 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <Link className="nav__link" href="/huong-dan" aria-current={isActive('/huong-dan') ? 'page' : undefined}><Icon name="i-help" size={18} />Hướng dẫn</Link>
         </nav>
 
-        <div className="side-foot">
-          <div className="user">
-            {/* Ghi cứng cho tới khi có màn tài khoản thật — đọc tên/email từ
-                phiên đăng nhập là việc của phase sau, không thuộc bài test. */}
-            <div className="user__avatar" aria-hidden="true">NS</div>
-            <div className="user__text">
-              <div className="user__name">Nhân sự nội dung</div>
-              <div className="user__mail">seed@aicontent.local</div>
+        <div className="side-foot" style={{ position: 'relative' }}>
+          {userMenuOpen && (
+            <div
+              style={{
+                position: 'absolute',
+                bottom: '100%',
+                left: 12,
+                right: 12,
+                marginBottom: 8,
+                background: 'var(--surface)',
+                border: '1px solid var(--line)',
+                borderRadius: 'var(--r-md)',
+                boxShadow: 'var(--shadow-md)',
+                padding: '6px',
+                zIndex: 50,
+              }}
+            >
+              <button
+                type="button"
+                onClick={async () => {
+                  await dangXuatAction();
+                }}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  color: 'var(--clay)',
+                  fontWeight: 600,
+                  fontSize: 13,
+                  padding: '8px 12px',
+                  borderRadius: 'var(--r-sm)',
+                  background: 'none',
+                  border: 'none',
+                  width: '100%',
+                  textAlign: 'left',
+                  cursor: 'pointer',
+                }}
+              >
+                ✕ Đăng xuất tài khoản
+              </button>
             </div>
-            <button className="icon-btn" type="button" aria-label="Tuỳ chọn tài khoản"><Icon name="i-dots" size={18} /></button>
+          )}
+
+          <div className="user">
+            <div className="user__avatar" aria-hidden="true">{avatarLetters}</div>
+            <div className="user__text">
+              <div className="user__name">{user?.name ?? 'Nhân sự nội dung'}</div>
+              <div className="user__mail">{user?.email ?? 'seed@aicontent.local'}</div>
+            </div>
+            <button
+              className="icon-btn"
+              type="button"
+              aria-label="Tuỳ chọn tài khoản"
+              onClick={() => setUserMenuOpen((v) => !v)}
+            >
+              <Icon name="i-dots" size={18} />
+            </button>
           </div>
 
-          <div className="credit">
+          <Link href="/goi-cuoc" className="credit" style={{ textDecoration: 'none', display: 'block' }} title="Xem chi tiết gói cước và hạn ngạch">
             <div className="credit__row">
               <span className="credit__label">Tín dụng AI tháng này</span>
-              <span className="credit__value"><b>1.240</b>/3.000</span>
+              <span className="credit__value"><b>{soDuCredit.toLocaleString('vi-VN')}</b>/{tongCredit.toLocaleString('vi-VN')}</span>
             </div>
-            <div className="credit__bar"><div className="credit__fill" style={{ width: '41%' }} /></div>
-          </div>
+            <div className="credit__bar"><div className="credit__fill" style={{ width: `${phanTramCredit}%` }} /></div>
+          </Link>
         </div>
       </aside>
 

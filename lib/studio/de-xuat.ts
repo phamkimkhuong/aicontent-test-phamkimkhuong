@@ -20,6 +20,7 @@ import type { ChanDung } from '@/lib/data-access/personas';
 import type { Insight } from '@/lib/data-access/insights';
 import type { TruCot } from '@/lib/data-access/content-pillars';
 import { chayNhiemVu } from '@/lib/model-runner';
+import { DINH_MUC_TIN_DUNG } from '@/lib/credits/dinh-muc-tin-dung';
 import { daBocXong, type CongThuc } from './boc-cong-thuc';
 
 import type { BeMat, KetQuaStudio, ThamSoDeXuat, YTuongDeXuat } from './kieu';
@@ -527,7 +528,23 @@ export async function deXuatYTuong(
     soLuongKhamPhaMucTieu,
   };
 
-  // --- 4. Goi mo hinh qua hang doi ---
+  // --- 4. Kiem tra han muc Tin dung AI ---
+  const chiPhiCredit = DINH_MUC_TIN_DUNG['de-xuat-y-tuong'];
+  try {
+    const kiemTraCredit = await repo.credits.kiemTraDuCredit(chiPhiCredit);
+    if (!kiemTraCredit.du) {
+      return {
+        trangThai: 'loi',
+        ketQua: null,
+        loi: `Bạn đã sử dụng hết hạn mức tín dụng tháng này (còn ${kiemTraCredit.soDuHienTai} Credits, cần ${chiPhiCredit} Credits). Vui lòng nâng cấp gói cước để tiếp tục.`,
+        canhBao,
+      };
+    }
+  } catch {
+    // Neu khong doc duoc credit -> bo qua de tranh chan nguoi dung khi co loi doc
+  }
+
+  // --- 5. Goi mo hinh qua hang doi ---
   let ketQuaMoHinh;
   try {
     ketQuaMoHinh = await chayNhiemVu({
@@ -625,6 +642,16 @@ export async function deXuatYTuong(
     } catch {
       // Khong critical — chi anh huong thu tu uu tien lan sau
     }
+  }
+
+  // Tru tin dung khi tao de xuat y tuong thanh cong
+  try {
+    await repo.credits.ghiBienDong(
+      -chiPhiCredit,
+      `Đề xuất ${yTuongDaRai.length} ý tưởng (${beMat})`,
+    );
+  } catch {
+    // Khong chan luong neu ghi nhat ky credit loi
   }
 
   return {

@@ -13,7 +13,9 @@
  * trong mo ta san pham cung khong sai khien duoc he thong.
  */
 
+import { createRepo } from '@/lib/data-access';
 import { chayNhiemVu } from '@/lib/model-runner';
+import { DINH_MUC_TIN_DUNG } from '@/lib/credits/dinh-muc-tin-dung';
 
 /** Ban nhap boc ra — dung ten cot cua database de man hinh luu thang duoc. */
 export type BanNhapHoSo = {
@@ -120,6 +122,21 @@ export async function bocTachHoSo(
     };
   }
 
+  const repo = createRepo(workspaceId);
+  const chiPhiCredit = DINH_MUC_TIN_DUNG['boc-tach-ho-so'];
+  try {
+    const kiemTraCredit = await repo.credits.kiemTraDuCredit(chiPhiCredit);
+    if (!kiemTraCredit.du) {
+      return {
+        ok: false,
+        loi: `Bạn đã sử dụng hết hạn mức tín dụng tháng này (còn ${kiemTraCredit.soDuHienTai} Credits, cần ${chiPhiCredit} Credits). Vui lòng nâng cấp gói cước để tiếp tục.`,
+        jobId: null,
+      };
+    }
+  } catch {
+    // Bo qua neu khong doc duoc credit
+  }
+
   const ketQua = await chayNhiemVu({
     nhiemVu: 'boc-tach-ho-so',
     duLieuVao: { vanBanTho: vanBan },
@@ -149,6 +166,16 @@ export async function bocTachHoSo(
         'khách hàng hoặc các tuyến nội dung của kênh.',
       jobId: ketQua.jobId,
     };
+  }
+
+  // Tru tin dung khi boc tach ho so thanh cong
+  try {
+    await repo.credits.ghiBienDong(
+      -chiPhiCredit,
+      'Bóc tách hồ sơ thương hiệu tự động',
+    );
+  } catch {
+    // Khong chan luong neu ghi nhat ky credit loi
   }
 
   return { ok: true, banNhap, jobId: ketQua.jobId, moHinh: ketQua.moHinh };

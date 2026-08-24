@@ -8,6 +8,7 @@
 import { createRepo } from '@/lib/data-access';
 import { chayNhiemVu } from '@/lib/model-runner';
 import { quetQuyTacNgonNgu, type ViPhamNgonNgu } from '@/lib/brand/quy-tac-ngon-ngu';
+import { DINH_MUC_TIN_DUNG } from '@/lib/credits/dinh-muc-tin-dung';
 import { demTu } from './cong-dem-tu';
 import type {
   BeMat,
@@ -123,6 +124,22 @@ export async function sinhKichBanVideo(
     },
   };
 
+  // Kiem tra han muc Tin dung AI
+  const chiPhiCredit = DINH_MUC_TIN_DUNG['viet-kich-ban'];
+  try {
+    const kiemTraCredit = await repo.credits.kiemTraDuCredit(chiPhiCredit);
+    if (!kiemTraCredit.du) {
+      return {
+        trangThai: 'loi',
+        ketQua: null,
+        loi: `Bạn đã sử dụng hết hạn mức tín dụng tháng này (còn ${kiemTraCredit.soDuHienTai} Credits, cần ${chiPhiCredit} Credits). Vui lòng nâng cấp gói cước để tiếp tục.`,
+        canhBao: [],
+      };
+    }
+  } catch {
+    // Bo qua neu khong doc duoc credit
+  }
+
   try {
     const res = await chayNhiemVu({
       nhiemVu: 'viet-kich-ban',
@@ -166,6 +183,16 @@ export async function sinhKichBanVideo(
         boiCanh: v.boiCanh,
       }),
     );
+
+    // Tru tin dung khi sinh kich ban video thanh cong
+    try {
+      await repo.credits.ghiBienDong(
+        -chiPhiCredit,
+        `Viết kịch bản video "${(tieuDe || finalTieuDe).slice(0, 40)}"`,
+      );
+    } catch {
+      // Khong chan luong neu ghi nhat ky credit loi
+    }
 
     return {
       trangThai: 'xong',

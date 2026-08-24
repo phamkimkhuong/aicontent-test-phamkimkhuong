@@ -22,7 +22,8 @@ import {
   workspaceMembers,
   workspaces,
 } from '@/db/schema/auth';
-import { emailDuocPhep } from '@/lib/auth/danh-sach-email-cho-phep.mjs';
+import { creditLedger } from '@/db/schema/ops';
+import { HAN_MUC_MIEN_PHI_THANG } from '@/lib/credits/dinh-muc-tin-dung';
 
 declare module '@auth/core/types' {
   interface Session {
@@ -83,6 +84,14 @@ async function baoDamCoKhongGianLamViec(
       .insert(workspaceMembers)
       .values({ workspaceId: moi.id, userId, vaiTro: 'chu_so_huu' });
 
+    // Cấp ngay hạn ngạch tín dụng khởi tạo ban đầu cho người dùng mới
+    await tx.insert(creditLedger).values({
+      workspaceId: moi.id,
+      bienDongLuot: HAN_MUC_MIEN_PHI_THANG,
+      lyDo: 'Hạn mức miễn phí khởi tạo tài khoản',
+      soDuSau: HAN_MUC_MIEN_PHI_THANG,
+    });
+
     return moi.id;
   });
 }
@@ -119,13 +128,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
   callbacks: {
     /**
-     * Chan o day chu khong o cho khac: callback nay chay TRUOC khi Auth.js ghi
-     * `users`/`oauth_accounts`, nen email ngoai danh sach khong de lai dong nao.
+     * Cho phép tất cả tài khoản Google đăng nhập công khai vào hệ thống.
      */
     signIn({ user }) {
-      if (emailDuocPhep(user.email, process.env.AUTH_ALLOWED_EMAILS)) return true;
-      console.warn(`[auth] tu choi dang nhap ngoai danh sach cho phep: ${user.email}`);
-      return false;
+      return Boolean(user?.email);
     },
 
     /**

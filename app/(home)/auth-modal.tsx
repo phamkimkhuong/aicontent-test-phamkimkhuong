@@ -92,7 +92,7 @@ export function AuthModal({ isOpen, onClose, onLoginGoogle }: Props) {
         </a>
 
         <div className="auth-modal-footer">
-          Chỉ các tài khoản trong danh sách nội bộ hoặc được cấp phép mới có quyền truy cập.
+          Đăng nhập mở tự do bằng Google · Tự động cấp 1.500 Tín dụng AI miễn phí mỗi tháng.
         </div>
       </div>
     </div>

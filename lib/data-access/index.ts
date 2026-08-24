@@ -36,6 +36,7 @@ import {
   type NguoiDungTuPhien,
   type WorkspaceScoped,
 } from './guard';
+import { creditLedgerRepo } from './credit-ledger';
 import { ideasRepo } from './ideas';
 import { insightsRepo } from './insights';
 import { jobsRepo } from './jobs';
@@ -63,6 +64,7 @@ export function taoRepo(ketNoi: KetNoiDrizzle, workspaceId: string) {
     jobs: jobsRepo(ketNoi, ws),
     modelRuns: modelRunsRepo(ketNoi, ws),
     costLog: costLogRepo(ketNoi, ws),
+    credits: creditLedgerRepo(ketNoi, ws),
     contents: contentsRepo(ketNoi, ws),
     // Nam nhom ho so thuong hieu (Phase 8).
     hoSo: brandProfilesRepo(ketNoi, ws),
