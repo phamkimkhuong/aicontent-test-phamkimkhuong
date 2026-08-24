@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import { Suspense } from 'react';
 
 import { TrangChuClient } from './home-page-client';
 import './home-page.css';
@@ -11,9 +10,5 @@ export const metadata: Metadata = {
 };
 
 export default function TrangChu() {
-  return (
-    <Suspense fallback={null}>
-      <TrangChuClient />
-    </Suspense>
-  );
+  return <TrangChuClient />;
 }

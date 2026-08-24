@@ -64,10 +64,16 @@ function beKetNoi(tenBien = 'DATABASE_URL') {
   return moi;
 }
 
+const { drizzle } = require('drizzle-orm/node-postgres');
+
+function taoDrizzle(beDung) {
+  return drizzle(beDung);
+}
+
 async function dongBeKetNoi() {
   const dang = [...be.values()];
   be.clear();
   await Promise.all(dang.map((b) => b.end().catch(() => {})));
 }
 
-module.exports = { beKetNoi, dongBeKetNoi };
+module.exports = { beKetNoi, dongBeKetNoi, taoDrizzle };

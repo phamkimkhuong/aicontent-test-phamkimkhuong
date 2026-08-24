@@ -1,21 +1,13 @@
 'use client';
 
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import { dangNhapGoogleAction } from './actions';
 import { AuthModal } from './auth-modal';
 
 export function TrangChuClient() {
-  const searchParams = useSearchParams();
   const [modalOpen, setModalOpen] = useState(false);
-
-  useEffect(() => {
-    if (searchParams.get('login') === '1') {
-      setModalOpen(true);
-    }
-  }, [searchParams]);
 
   async function handleLoginGoogle() {
     await dangNhapGoogleAction();

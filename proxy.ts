@@ -10,7 +10,7 @@ import { auth } from '@/auth';
 // khong da duoc nguoi dung ra, tuc phien coi nhu khong thu hoi duoc.
 export default auth((req) => {
   if (req.auth) return;
-  return NextResponse.redirect(new URL('/?login=1', req.nextUrl.origin));
+  return NextResponse.redirect(new URL('/', req.nextUrl.origin));
 });
 
 export const config = {

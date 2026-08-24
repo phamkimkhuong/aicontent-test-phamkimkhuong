@@ -28,7 +28,14 @@ export default defineConfig({
   dialect: 'postgresql',
   schema: './db/schema/index.ts',
   out: './db/migrations',
-  dbCredentials: { url: rawUrl },
+  dbCredentials: {
+    url: rawUrl,
+    ssl: laLocal
+      ? undefined
+      : {
+          rejectUnauthorized: false,
+        },
+  },
   casing: 'snake_case',
   verbose: true,
   strict: true,

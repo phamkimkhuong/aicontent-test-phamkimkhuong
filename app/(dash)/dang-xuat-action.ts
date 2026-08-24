@@ -3,5 +3,5 @@
 import { signOut } from '@/auth';
 
 export async function dangXuatAction() {
-  await signOut({ redirectTo: '/?login=1' });
+  await signOut({ redirectTo: '/' });
 }
