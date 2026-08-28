@@ -169,5 +169,36 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         .set({ lanDangNhapCuoi: new Date() })
         .where(eq(users.id, user.id));
     },
+
+    /**
+     * Bảo vệ chống nuốt tài khoản: Nếu trình duyệt đang có cookie của tài khoản Demo
+     * mà người dùng đăng nhập bằng Google, Auth.js mặc định sẽ "Link Account" vào Demo.
+     * Handler này sẽ tự động tách Google account sang User thật tương ứng.
+     */
+    async linkAccount({ user, account, profile }) {
+      if (user.id === '00000000-0000-4000-8000-000000000001' && (profile as any)?.email) {
+        const p = profile as any;
+        const email = p.email as string;
+        const name = (p.name as string) || (p.given_name as string) || email.split('@')[0];
+        const image = (p.picture as string) || user.image || null;
+
+        const [newUser] = await db
+          .insert(users)
+          .values({ name, email, image })
+          .onConflictDoUpdate({
+            target: users.email,
+            set: { lanDangNhapCuoi: new Date() },
+          })
+          .returning({ id: users.id });
+
+        if (newUser?.id) {
+          await db
+            .update(oauthAccounts)
+            .set({ userId: newUser.id })
+            .where(eq(oauthAccounts.providerAccountId, account.providerAccountId));
+          await baoDamCoKhongGianLamViec(newUser.id, name, email);
+        }
+      }
+    },
   },
 });
