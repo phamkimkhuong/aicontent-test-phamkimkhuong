@@ -30,7 +30,8 @@ function bocTheoDacTa(dacTa: DacTaNhom, form: FormData): Record<string, unknown>
       continue;
     }
     const tho = form.get(truong.khoa);
-    const chuoi = typeof tho === 'string' ? tho.trim() : '';
+    let chuoi = typeof tho === 'string' ? tho.trim() : '';
+    if (truong.khoa === 'tiLeMucTieu' && chuoi) { chuoi = chuoi.replace(/%/g, '').trim(); }
     // O rong ghi `null` chu khong ghi chuoi rong: `do-day-du.ts` coi chuoi rong
     // la chua dien, hai cach bieu dien cung mot y nghia la mam mong lech nhau.
     giaTri[truong.khoa] = chuoi === '' ? null : chuoi;

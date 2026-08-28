@@ -85,9 +85,7 @@ export function ManHinhDan() {
   return (
     <div className="dan">
       {loi ? (
-        <p className="loi" role="alert">
-          {loi}
-        </p>
+        <div className="hop-loi" role="alert"><div className="hop-loi__icon"><Icon name="i-alert" size={18} /></div><div className="hop-loi__noi-dung"><p className="hop-loi__tieu-de">Có lỗi xảy ra</p><p className="hop-loi__chi-tiet">{loi}</p></div></div>
       ) : null}
 
       {buoc === 'dan' ? (
@@ -318,3 +316,4 @@ function KhoiNhom({
     </section>
   );
 }
+

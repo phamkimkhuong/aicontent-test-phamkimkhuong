@@ -289,20 +289,20 @@
 
 .bieu-mau {
   display: grid;
-  gap: 14px;
-  padding: 18px;
+  gap: 18px;
+  padding: 22px 24px;
   background: var(--surface-2);
   border: 1px solid var(--line);
-  border-radius: var(--r-md);
+  border-radius: var(--r-lg);
 }
 
 .o {
   display: grid;
-  gap: 5px;
+  gap: 6px;
 }
 
 .o__nhan {
-  font-size: 13px;
+  font-size: 13.5px;
   font-weight: 600;
   color: var(--ink);
 }
@@ -312,33 +312,40 @@
 }
 
 .o__goi-y {
-  font-size: 12px;
+  font-size: 12.5px;
   color: var(--ink-3);
   margin: 0;
+  line-height: 1.45;
 }
 
 .o input[type='text'],
 .o textarea {
   width: 100%;
-  padding: 9px 11px;
+  padding: 11px 14px;
   font: inherit;
   font-size: 14px;
+  line-height: 1.65;
   color: var(--ink);
   background: var(--surface);
-  border: 1px solid var(--line-strong);
-  border-radius: var(--r-sm);
+  border: 1.5px solid var(--line);
+  border-radius: var(--r-md);
+  box-sizing: border-box;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
 }
 
 .o input[type='text']:focus,
 .o textarea:focus {
-  outline: 2px solid var(--brand-400);
-  outline-offset: 1px;
-  border-color: var(--brand-400);
+  outline: none;
+  border-color: var(--brand-500);
+  background: var(--surface);
+  box-shadow: 0 0 0 3px rgba(226, 121, 30, 0.14);
 }
 
 .o textarea {
-  min-height: 84px;
+  min-height: 115px;
+  field-sizing: content;
   resize: vertical;
+  line-height: 1.65;
 }
 
 .o--co {
@@ -360,12 +367,116 @@
   align-items: center;
 }
 
+/* --- Hop thong bao loi chuan UI hien dai --- */
+.hop-loi {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: var(--r-md);
+  background: #fdf5f2;
+  border: 1px solid #f8d3c7;
+  border-left: 4px solid var(--clay);
+  box-shadow: 0 2px 8px rgba(183, 69, 44, 0.08);
+  animation: slideInDown 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  margin-bottom: 16px;
+}
+
+.hop-loi__icon {
+  flex-shrink: 0;
+  margin-top: 1px;
+  color: var(--clay);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hop-loi__noi-dung {
+  flex: 1;
+  min-width: 0;
+}
+
+.hop-loi__tieu-de {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--clay);
+  margin: 0 0 2px 0;
+  line-height: 1.4;
+}
+
+.hop-loi__chi-tiet {
+  font-size: 13px;
+  color: var(--ink-2);
+  margin: 0;
+  line-height: 1.45;
+}
+
+@keyframes slideInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Truong input khi bi loi validation */
+.o--loi input[type='text'],
+.o--loi textarea {
+  border-color: var(--clay) !important;
+  background-color: #fff9f8 !important;
+  box-shadow: 0 0 0 1px var(--clay) !important;
+}
+
+.o--loi input[type='text']:focus,
+.o--loi textarea:focus {
+  outline: none !important;
+  border-color: var(--clay) !important;
+  box-shadow: 0 0 0 3px rgba(183, 69, 44, 0.18) !important;
+}
+
+.o__loi-nhan {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--clay);
+  margin: 5px 0 0 0;
+  animation: fadeInLoi 0.2s ease-out;
+}
+
+.o__loi-nhan svg {
+  flex-shrink: 0;
+}
+
+@keyframes fadeInLoi {
+  from {
+    opacity: 0;
+    transform: translateY(-3px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .loi {
-  padding: 9px 12px;
-  border-radius: var(--r-sm);
-  background: var(--clay-bg);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: var(--r-md);
+  background: #fdf5f2;
+  border: 1px solid #f8d3c7;
+  border-left: 3.5px solid var(--clay);
   color: var(--clay);
   font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 6px rgba(183, 69, 44, 0.05);
 }
 
 /* --- Man hinh dan van ban --- */

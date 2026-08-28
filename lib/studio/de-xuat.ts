@@ -424,29 +424,23 @@ export async function deXuatYTuong(
   }
 
   if (truCotDs.length === 0) {
-    canhBao.push('Chưa có trụ cột nội dung. Vào /brand để thêm.');
+    canhBao.push('Hồ sơ chưa có trụ cột nội dung — đang dùng trụ cột chung tạm thời.');
   }
   if (chanDungDs.length === 0) {
-    canhBao.push('Chưa có chân dung khách hàng. Vào /brand để thêm.');
-  }
-  if (truCotDs.length === 0 || chanDungDs.length === 0) {
-    return {
-      trangThai: 'loi',
-      ketQua: null,
-      loi: 'Cần có ít nhất một trụ cột và một chân dung khách hàng trước khi đề xuất.',
-      canhBao,
-    };
+    canhBao.push('Hồ sơ chưa có chân dung khách hàng — đang dùng chân dung đại chúng tạm thời.');
   }
 
-  // Danh sach TEN co that — de doi chieu ket qua mo hinh
-  const dsTenTruCot = truCotDs.map((t: TruCot) => t.ten);
-  const dsTenChanDung = chanDungDs.map((c: ChanDung) => c.ten);
+  // Danh sach TEN co that — hoac fallback mac dinh neu nguoi dung sinh thu khi ho so chua day du
+  const dsTenTruCot = truCotDs.length > 0 ? truCotDs.map((t: TruCot) => t.ten) : ['Chia sẻ giá trị'];
+  const dsTenChanDung = chanDungDs.length > 0 ? chanDungDs.map((c: ChanDung) => c.ten) : ['Khách hàng đại chúng'];
 
   // Tru cot muc tieu — de rai y tuong theo ti le
-  const truCotMucTieu: TruCotMucTieu[] = truCotDs.map((t: TruCot) => ({
-    ten: t.ten,
-    tiLeMucTieu: t.tiLeMucTieu !== null ? Number(t.tiLeMucTieu) : null,
-  }));
+  const truCotMucTieu: TruCotMucTieu[] = truCotDs.length > 0
+    ? truCotDs.map((t: TruCot) => ({
+        ten: t.ten,
+        tiLeMucTieu: t.tiLeMucTieu !== null ? Number(t.tiLeMucTieu) : null,
+      }))
+    : [{ ten: 'Chia sẻ giá trị', tiLeMucTieu: 100 }];
 
   // --- 2. Doc tin hieu xu huong (chi cong thuc ke, KHONG co noi dung goc) ---
   // Truc co lap thu 2: chi lay tin hieu cua cac kenh NGUOI NAY thuc su theo doi.

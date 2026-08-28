@@ -22,24 +22,39 @@ export function DanhSachNhom({ dacTa, danhSach }: { dacTa: DacTaNhom; danhSach: 
     datLoi(null);
     batDau(async () => {
       const kq = await viec();
-      if (kq.ok) xong();
-      else datLoi(kq.loi ?? 'Không lưu được.');
+      if (kq.ok) {
+        datLoi(null);
+        xong();
+      } else {
+        datLoi(kq.loi ?? 'Không lưu được.');
+      }
     });
   }
 
   return (
     <>
-      {loi ? (
-        <p className="loi" role="alert">
-          {loi}
-        </p>
+      {/* Chi hien thong bao loi tong khi khong co form nao dang mo */}
+      {loi && !dangThem && !dangSua ? (
+        <div className="hop-loi" role="alert">
+          <div className="hop-loi__icon">
+            <Icon name="i-alert" size={18} />
+          </div>
+          <div className="hop-loi__noi-dung">
+            <p className="hop-loi__tieu-de">Có lỗi xảy ra</p>
+            <p className="hop-loi__chi-tiet">{loi}</p>
+          </div>
+        </div>
       ) : null}
 
       {dangThem ? (
         <BieuMau
           dacTa={dacTa}
           dangChay={dangChay}
-          onHuy={() => datDangThem(false)}
+          loiServer={loi}
+          onHuy={() => {
+            datLoi(null);
+            datDangThem(false);
+          }}
           onGui={(form) =>
             goiHanhDong(
               () => taoMuc(dacTa.slug, form),
@@ -76,7 +91,11 @@ export function DanhSachNhom({ dacTa, danhSach }: { dacTa: DacTaNhom; danhSach: 
                 dacTa={dacTa}
                 dong={dong}
                 dangChay={dangChay}
-                onHuy={() => datDangSua(null)}
+                loiServer={loi}
+                onHuy={() => {
+                  datLoi(null);
+                  datDangSua(null);
+                }}
                 onGui={(form) =>
                   goiHanhDong(
                     () => suaMuc(dacTa.slug, dong.id, form),
@@ -140,25 +159,99 @@ function BieuMau({
   dacTa,
   dong,
   dangChay,
+  loiServer,
   onGui,
   onHuy,
 }: {
   dacTa: DacTaNhom;
   dong?: Dong;
   dangChay: boolean;
+  loiServer?: string | null;
   onGui: (form: FormData) => void;
   onHuy: () => void;
 }) {
+  const [loiTruong, datLoiTruong] = useState<Record<string, string>>({});
+  const [loiCucBo, datLoiCucBo] = useState<string | null>(null);
+
+  // Tong hop loi giua validation client va server response
+  const thongBaoLoi = loiCucBo || loiServer;
+
+  function xuLyGui(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const formEl = e.currentTarget;
+    const formData = new FormData(formEl);
+    const cacLoi: Record<string, string> = {};
+
+    // Validate client-side cac truong bat buoc
+    for (const truong of dacTa.truong) {
+      if (truong.batBuoc) {
+        const val = formData.get(truong.khoa);
+        const chuoi = typeof val === 'string' ? val.trim() : '';
+        if (!chuoi) {
+          cacLoi[truong.khoa] = `Vui lòng nhập ${truong.nhan.toLowerCase()}`;
+        }
+      }
+    }
+
+    if (Object.keys(cacLoi).length > 0) {
+      datLoiTruong(cacLoi);
+      const truongDauTien = dacTa.truong.find((t) => cacLoi[t.khoa]);
+      datLoiCucBo(
+        truongDauTien
+          ? `Vui lòng điền thông tin bắt buộc: "${truongDauTien.nhan}"`
+          : 'Vui lòng kiểm tra lại các trường bắt buộc.'
+      );
+      if (truongDauTien) {
+        document.getElementById(`o-${truongDauTien.khoa}`)?.focus();
+      }
+      return;
+    }
+
+    datLoiTruong({});
+    datLoiCucBo(null);
+    onGui(formData);
+  }
+
+  function xoaLoiTruong(khoa: string) {
+    if (loiTruong[khoa] || loiCucBo) {
+      datLoiTruong((prev) => {
+        const moi = { ...prev };
+        delete moi[khoa];
+        return moi;
+      });
+      datLoiCucBo(null);
+    }
+  }
+
   return (
     <form
       className="bieu-mau"
-      action={onGui}
+      onSubmit={xuLyGui}
       // `key` doi theo dong dang sua de React dung lai gia tri mac dinh moi khi
       // chuyen sang sua dong khac.
       key={dong?.id ?? 'them-moi'}
+      noValidate
     >
+      {thongBaoLoi ? (
+        <div className="hop-loi" role="alert">
+          <div className="hop-loi__icon">
+            <Icon name="i-alert" size={18} />
+          </div>
+          <div className="hop-loi__noi-dung">
+            <p className="hop-loi__tieu-de">Thông tin chưa hợp lệ</p>
+            <p className="hop-loi__chi-tiet">{thongBaoLoi}</p>
+          </div>
+        </div>
+      ) : null}
+
       {dacTa.truong.map((truong) => (
-        <ONhap key={truong.khoa} truong={truong} giaTri={dong?.[truong.khoa]} />
+        <ONhap
+          key={truong.khoa}
+          truong={truong}
+          giaTri={dong?.[truong.khoa]}
+          loi={loiTruong[truong.khoa]}
+          onThayDoi={() => xoaLoiTruong(truong.khoa)}
+        />
       ))}
 
       <div className="bieu-mau__nut">
@@ -173,7 +266,17 @@ function BieuMau({
   );
 }
 
-function ONhap({ truong, giaTri }: { truong: Truong; giaTri?: unknown }) {
+function ONhap({
+  truong,
+  giaTri,
+  loi,
+  onThayDoi,
+}: {
+  truong: Truong;
+  giaTri?: unknown;
+  loi?: string;
+  onThayDoi?: () => void;
+}) {
   const id = `o-${truong.khoa}`;
 
   if (truong.kieu === 'co') {
@@ -191,17 +294,50 @@ function ONhap({ truong, giaTri }: { truong: Truong; giaTri?: unknown }) {
   }
 
   return (
-    <div className="o">
+    <div className={`o ${loi ? 'o--loi' : ''}`}>
       <label className="o__nhan" htmlFor={id}>
         {truong.nhan}
         {truong.batBuoc ? <span className="o__bat-buoc"> *</span> : null}
       </label>
       {truong.goiY ? <p className="o__goi-y">{truong.goiY}</p> : null}
       {truong.kieu === 'doan' ? (
-        <textarea id={id} name={truong.khoa} defaultValue={chuoiCua(giaTri)} />
+        <textarea
+          id={id}
+          name={truong.khoa}
+          defaultValue={chuoiCua(giaTri)}
+          ref={(el) => {
+            if (el) {
+              el.style.height = 'auto';
+              el.style.height = `${Math.max(115, el.scrollHeight)}px`;
+            }
+          }}
+          onInput={(e) => {
+            const el = e.currentTarget;
+            el.style.height = 'auto';
+            el.style.height = `${Math.max(115, el.scrollHeight)}px`;
+            onThayDoi?.();
+          }}
+          onChange={onThayDoi}
+          aria-invalid={loi ? 'true' : undefined}
+          aria-describedby={loi ? `${id}-loi` : undefined}
+        />
       ) : (
-        <input type="text" id={id} name={truong.khoa} defaultValue={chuoiCua(giaTri)} />
+        <input
+          type="text"
+          id={id}
+          name={truong.khoa}
+          defaultValue={chuoiCua(giaTri)}
+          onChange={onThayDoi}
+          aria-invalid={loi ? 'true' : undefined}
+          aria-describedby={loi ? `${id}-loi` : undefined}
+        />
       )}
+      {loi ? (
+        <p className="o__loi-nhan" id={`${id}-loi`} role="alert">
+          <Icon name="i-alert" size={13} />
+          <span>{loi}</span>
+        </p>
+      ) : null}
     </div>
   );
 }

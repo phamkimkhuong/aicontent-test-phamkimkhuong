@@ -6,6 +6,7 @@ import { createRepo } from '@/lib/data-access';
 import type { ChanDung } from '@/lib/data-access/personas';
 import type { TruCot } from '@/lib/data-access/content-pillars';
 import type { Idea } from '@/lib/data-access/ideas';
+import { tinhDoDayDu, type KetQuaDoDayDu } from '@/lib/brand/do-day-du';
 
 import { ManDeXuat } from './man-de-xuat';
 import '../studio.css';
@@ -36,11 +37,22 @@ export default async function TrangDeXuat(props: {
   const workspaceId = await workspaceHienTai();
   const repo = createRepo(workspaceId);
 
-  const [truCotDs, chanDungDs, yTuongList] = await Promise.all([
+  const [truCotDs, chanDungDs, yTuongList, sanPhamDs, insightDs, hoSo] = await Promise.all([
     repo.truCot.list(),
     repo.chanDung.list(),
     repo.yTuong.list(20),
+    repo.sanPham.list(),
+    repo.insight.list(),
+    repo.hoSo.layHoacTao(),
   ]);
+
+  const doDayDu: KetQuaDoDayDu = tinhDoDayDu({
+    truCot: truCotDs,
+    chanDung: chanDungDs,
+    sanPham: sanPhamDs,
+    insight: insightDs,
+    hoSo,
+  });
 
   const dsTenTruCot = truCotDs.map((t: TruCot) => t.ten);
   const dsTenChanDung = chanDungDs.map((c: ChanDung) => c.ten);
@@ -79,6 +91,7 @@ export default async function TrangDeXuat(props: {
         dsChanDung={dsTenChanDung}
         yTuongDaLuu={yTuongDaLuu}
         trendContext={trendContext}
+        doDayDu={doDayDu}
       />
     </>
   );

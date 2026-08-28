@@ -5,6 +5,7 @@ import { useState, useTransition } from 'react';
 
 import { Icon } from '@/app/sprite-icon';
 import type { BeMat, YTuongDeXuat } from '@/lib/studio/kieu';
+import type { KetQuaDoDayDu } from '@/lib/brand/do-day-du';
 
 import { sinhDeXuatAction } from './actions';
 
@@ -31,6 +32,7 @@ type Props = {
   dsChanDung: string[];
   yTuongDaLuu: YTuongDaLuu[];
   trendContext?: TrendContext | null;
+  doDayDu?: KetQuaDoDayDu;
 };
 
 const DANH_SACH_BE_MAT: {
@@ -70,7 +72,8 @@ const DANH_SACH_BE_MAT: {
   },
 ];
 
-export function ManDeXuat({ dsTruCot, dsChanDung, yTuongDaLuu, trendContext }: Props) {
+export function ManDeXuat({ dsTruCot, dsChanDung, yTuongDaLuu, trendContext, doDayDu }: Props) {
+  const [moModalCanhBao, setMoModalCanhBao] = useState(false);
   const [trendNguon, setTrendNguon] = useState<TrendContext | null>(trendContext ?? null);
   const [beMat, setBeMat] = useState<BeMat>(
     trendContext?.dang === 'kich_ban_quay' ? 'tiktok' : 'fanpage',
@@ -229,10 +232,34 @@ export function ManDeXuat({ dsTruCot, dsChanDung, yTuongDaLuu, trendContext }: P
             </div>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              {doDayDu ? (
+                doDayDu.phanTram >= 60 ? (
+                  <Link href="/brand" className="ho-so-badge ho-so-badge--ok" title="Hồ sơ đã đạt chuẩn để đề xuất tối ưu">
+                    <Icon name="i-check" size={13} />
+                    Hồ sơ {doDayDu.phanTram}% (Đạt chuẩn)
+                  </Link>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setMoModalCanhBao(true)}
+                    className="ho-so-badge ho-so-badge--warn"
+                    title="Hồ sơ dưới 60% — Bấm để xem chi tiết"
+                  >
+                    <Icon name="i-alert" size={13} />
+                    Hồ sơ {doDayDu.phanTram}% (Chưa tối ưu)
+                  </button>
+                )
+              ) : null}
               <button
                 type="button"
                 className="btn btn--primary"
-                onClick={handleSinhDeXuat}
+                onClick={() => {
+                  if (doDayDu && doDayDu.phanTram < 60) {
+                    setMoModalCanhBao(true);
+                  } else {
+                    handleSinhDeXuat();
+                  }
+                }}
                 disabled={dangSinh}
                 style={{
                   padding: '10px 22px',
@@ -564,6 +591,123 @@ export function ManDeXuat({ dsTruCot, dsChanDung, yTuongDaLuu, trendContext }: P
           </div>
         )}
       </div>
+    
+      {/* Modal Cảnh báo mềm (Soft Warning) khi hồ sơ < 60% */}
+      {moModalCanhBao && doDayDu && (() => {
+        const MAP_SLUG_NHOM: Record<string, string> = {
+          truCot: 'tru-cot',
+          chanDung: 'chan-dung',
+          sanPham: 'san-pham',
+          giongDieu: 'giong-dieu',
+          insight: 'insight',
+        };
+        const nhomCanNhat = doDayDu.conThieu?.[0] ?? null;
+
+        return (
+          <div className="soft-modal-backdrop" onClick={() => setMoModalCanhBao(false)}>
+            <div className="soft-modal" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
+              <button
+                type="button"
+                className="soft-modal__close"
+                onClick={() => setMoModalCanhBao(false)}
+                aria-label="Đóng"
+              >
+                ✕
+              </button>
+
+              <div className="soft-modal__header">
+                <div className="soft-modal__icon-wrap">
+                  <Icon name="i-sparkle" size={22} />
+                </div>
+                <div>
+                  <h3 className="soft-modal__title">Hồ sơ thương hiệu chưa đầy đủ</h3>
+                  <span className="soft-modal__badge">
+                    Đạt {doDayDu.phanTram}% (Ngưỡng đề xuất tối ưu là 60%)
+                  </span>
+                </div>
+              </div>
+
+              <p className="soft-modal__desc">
+                Hồ sơ thương hiệu của bạn mới đạt <strong>{doDayDu.phanTram}%</strong>. Ý tưởng sinh ra có thể sẽ còn chung chung.
+                {nhomCanNhat ? (
+                  <> Bạn có muốn bổ sung thêm <strong>{nhomCanNhat.ten} (+{nhomCanNhat.trongSo}%)</strong> để nội dung sắc sảo và bám sát khách hàng hơn không?</>
+                ) : null}
+              </p>
+
+              <div className="soft-modal__progress-box">
+                <div className="soft-modal__progress-head">
+                  <span>Độ hoàn thiện hồ sơ</span>
+                  <span style={{ color: 'var(--brand-600)' }}>{doDayDu.phanTram}%</span>
+                </div>
+                <div className="soft-modal__progress-track">
+                  <div
+                    className="soft-modal__progress-bar"
+                    style={{ width: `${Math.max(4, doDayDu.phanTram)}%` }}
+                  />
+                </div>
+                <div className="soft-modal__progress-sub">
+                  <span>0%</span>
+                  <span style={{ fontWeight: 600, color: 'var(--ink)' }}>Ngưỡng tối ưu: 60%</span>
+                  <span>100%</span>
+                </div>
+              </div>
+
+              {doDayDu.conThieu.length > 0 && (
+                <div style={{ marginBottom: 20 }}>
+                  <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--ink-3)', margin: '0 0 8px 0' }}>
+                    GỢI Ý BỔ SUNG NHANH:
+                  </p>
+                  <div className="soft-modal__missing-list">
+                    {doDayDu.conThieu.slice(0, 3).map((item) => (
+                      <Link
+                        key={item.nhom}
+                        href={`/brand/${MAP_SLUG_NHOM[item.nhom] || 'san-pham'}`}
+                        className="soft-modal__missing-item"
+                        title={item.yeuCau}
+                      >
+                        <span>
+                          <strong>{item.ten}</strong>{' '}
+                          <span style={{ fontSize: 11.5, color: 'var(--ink-3)' }}>— {item.yeuCau}</span>
+                        </span>
+                        <span className="soft-modal__missing-tag">+{item.trongSo}%</span>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="soft-modal__actions">
+                <button
+                  type="button"
+                  className="btn btn--ghost"
+                  onClick={() => {
+                    setMoModalCanhBao(false);
+                    handleSinhDeXuat();
+                  }}
+                  disabled={dangSinh}
+                >
+                  Vẫn muốn sinh thử
+                </button>
+
+                {nhomCanNhat ? (
+                  <Link
+                    href={`/brand/${MAP_SLUG_NHOM[nhomCanNhat.nhom] || 'san-pham'}`}
+                    className="btn btn--primary"
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
+                  >
+                    <Icon name="i-plus" size={15} />
+                    Điền thêm {nhomCanNhat.ten} (+{nhomCanNhat.trongSo}%)
+                  </Link>
+                ) : (
+                  <Link href="/brand" className="btn btn--primary">
+                    Hoàn thiện hồ sơ
+                  </Link>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }
